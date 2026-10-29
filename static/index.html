@@ -75,7 +75,12 @@ dialog input{width:100%;padding:6px;margin:4px 0 12px}dialog small{color:#555}
 #landing{position:absolute;inset:0;z-index:50;background:#2a2a2a url(/world.png) center/contain no-repeat;display:flex;align-items:center;justify-content:center;color:#eee}
 #landing.hide{display:none}
 #landing .lw{background:#14161cdd;border:1px solid #ffffff22;border-radius:14px;padding:26px 36px;text-align:center;max-width:560px;backdrop-filter:blur(3px)}
-#landing .lico{width:84px;height:84px;object-fit:contain}#landing h1{margin:6px 0 4px;font-size:30px;color:#fca311}
+#landing .lico{width:84px;height:84px;object-fit:contain;display:flex;align-items:center;justify-content:center;color:var(--logo-color,#fca311);transition:color .2s ease,filter .2s ease}
+#landing .lico:hover{color:var(--logo-hover-color,#ffffff);filter:drop-shadow(0 0 9px color-mix(in srgb,var(--logo-hover-color,#ffffff) 55%,transparent))}
+#landing .lico svg{width:100%;height:100%;display:block;overflow:visible}
+#logo-customizer{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin:8px 0 12px;font-size:12px;color:#cfd2d8}
+#logo-customizer label{display:flex;gap:6px;align-items:center}
+#logo-customizer input[type=color]{width:30px;height:26px;padding:2px;border:1px solid #ffffff44;border-radius:5px;background:#262a33;cursor:pointer}#landing h1{margin:6px 0 4px;font-size:30px;color:#fca311}
 #landing p{margin:0 0 14px;color:#cfd2d8}#landing .lb{display:flex;gap:12px;justify-content:center;margin:10px 0}
 #landing button.big{padding:12px 22px;font-size:15px;background:#fca311;color:#14100a;border:0;font-weight:700;border-radius:8px;cursor:pointer}
 #landing button.big+button.big{background:#262a33;color:#eee;border:1px solid #fca311}
@@ -148,8 +153,9 @@ dialog{background:var(--bg2);color:var(--tx);border:1px solid var(--acc)}dialog:
  <button id="go" disabled>Géoréférencer</button>
 </header>
 <div id="ws">
- <div id="landing"><div class="lw"><img class="lico" src="/icon.png" alt=""><h1>KalipheTiles</h1>
+ <div id="landing"><div class="lw"><div class="lico" id="landing-logo" aria-label="Logo KalipheTiles"></div><h1>KalipheTiles</h1>
   <p>Géoréférencez vos cartes et images, assemblez-les en collage, exportez tuiles, GeoTIFF, MNT et heightmaps.</p>
+  <div id="logo-customizer" aria-label="Personnalisation du logo"><label for="logo-color">Couleur du logo <input type="color" id="logo-color" value="#fca311"></label><label for="logo-hover-color">Au survol <input type="color" id="logo-hover-color" value="#ffffff"></label></div>
   <div class="lb"><button class="big" id="l-open">🖼 Ouvrir une image</button><button class="big" id="l-proj">📂 Ouvrir un projet</button></div>
   <small>ou glissez-déposez ici une image (JPG, PNG, TIFF, MNT 16 bits) ou un projet .ktproj</small>
   <ol><li>Chargez l'image : chaque image s'ouvre dans un nouvel onglet.</li><li>Posez 3 points ou plus : cliquez sur la loupe 🔍 dans l'image puis sur la carte (ou saisissez les coordonnées).</li><li>L'aperçu apparaît tout de suite sur la carte ; exportez quand c'est bon.</li></ol></div></div>
@@ -1121,5 +1127,23 @@ function showVector(data){
 $("#vector-file").addEventListener("change",async ev=>{const f=ev.target.files?.[0];if(!f)return;cadStatus.textContent="Import en cours…";try{const fd=new FormData();fd.append("file",f);const r=await fetch("/api/vector/import",{method:"POST",body:fd});const j=await r.json();if(!r.ok)throw Error(j.detail||"import impossible");showVector(j)}catch(e){cadStatus.textContent="⚠️ "+e.message}ev.target.value=""});
 $("#vector-dxf").onclick=async()=>{if(!importedVector){cadStatus.textContent="Importez d'abord un vecteur.";return}cadStatus.textContent="Préparation du DXF…";try{const r=await fetch("/api/vector/export-dxf",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({geojson:importedVector,name:"kaliphetiles_vectors"})});if(!r.ok){const j=await r.json();throw Error(j.detail||"export impossible")}const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="kaliphetiles_vectors.dxf";a.click();URL.revokeObjectURL(url);cadStatus.textContent="DXF exporté."}catch(e){cadStatus.textContent="⚠️ "+e.message}};
 $("#pmtiles-export").onclick=async()=>{const id=(typeof layers!=="undefined"&&layers.length)?layers[Math.max(0,cur||0)].id:null;if(!id){cadStatus.textContent="Importez une image et lancez Géoréférencer d'abord.";return}cadStatus.textContent="Conversion PMTiles…";try{const r=await fetch(`/api/maps/${id}/export-pmtiles`,{method:"POST"});if(!r.ok){const j=await r.json();throw Error(j.detail||"export impossible")}const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="kaliphetiles.pmtiles";a.click();URL.revokeObjectURL(url);cadStatus.textContent="PMTiles exporté."}catch(e){cadStatus.textContent="⚠️ "+e.message}};
+
+
+// Logo de l'accueil : SVG fourni, couleurs personnalisables et mémorisées sur cet appareil.
+(async()=>{
+ const holder=document.getElementById("landing-logo"), normal=document.getElementById("logo-color"), hover=document.getElementById("logo-hover-color");
+ if(!holder||!normal||!hover)return;
+ const safeColor=(v,fallback)=>/^#[0-9a-fA-F]{6}$/.test(v||"")?v:fallback;
+ try{
+  const response=await fetch("/landing-logo.svg"); if(!response.ok)throw new Error("logo absent");
+  let svg=await response.text();
+  // CurrentColor/variables apply because the SVG is inlined in the page.
+  svg=svg.replace(/<\?xml[^>]*\?>/g,""); holder.innerHTML=svg;
+ }catch(e){holder.innerHTML='<img src="/icon.png" alt="Logo KalipheTiles" style="width:100%;height:100%;object-fit:contain">';}
+ let saved={};try{saved=JSON.parse(localStorage.getItem("kaliphetiles-logo-colors")||"{}")}catch(e){}
+ normal.value=safeColor(saved.normal,"#fca311"); hover.value=safeColor(saved.hover,"#ffffff");
+ const apply=()=>{holder.style.setProperty("--logo-color",normal.value);holder.style.setProperty("--logo-hover-color",hover.value);try{localStorage.setItem("kaliphetiles-logo-colors",JSON.stringify({normal:normal.value,hover:hover.value}))}catch(e){}};
+ normal.addEventListener("input",apply);hover.addEventListener("input",apply);apply();
+})();
 
 </script></body></html>
