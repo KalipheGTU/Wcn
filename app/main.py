@@ -388,6 +388,64 @@ async def import_vector(file: UploadFile = File(...)):
                     g=sr.shape.__geo_interface__
                     feats.append({"type":"Feature","properties":dict(zip(fields,sr.record)),"geometry":g})
                 data={"type":"FeatureCollection","features":feats}
+        elif name.endswith(".svg"):
+            import xml.etree.ElementTree as ET
+            root = ET.fromstring(raw)
+            def num(v, default=0.0):
+                import re
+                m = re.match(r"\s*(-?(?:\d+(?:\.\d*)?|\.\d+))", str(v or ""))
+                return float(m.group(1)) if m else default
+            feats=[]
+            for el in root.iter():
+                tag=el.tag.rsplit("}",1)[-1].lower(); props={"id":el.attrib.get("id", ""), "svg_tag":tag}
+                geom=None
+                if tag in ("circle","ellipse"):
+                    cx=num(el.attrib.get("cx")); cy=num(el.attrib.get("cy")); rx=num(el.attrib.get("r",el.attrib.get("rx"))); ry=num(el.attrib.get("r",el.attrib.get("ry",el.attrib.get("r"))))
+                    if rx>0 and ry>0: geom={"type":"Polygon","coordinates":[[[cx+rx*__import__('math').cos(i*__import__('math').tau/48),cy+ry*__import__('math').sin(i*__import__('math').tau/48)] for i in range(49)]]}
+                elif tag=="rect":
+                    x=num(el.attrib.get("x")); y=num(el.attrib.get("y")); w=num(el.attrib.get("width")); h=num(el.attrib.get("height"))
+                    if w>0 and h>0: geom={"type":"Polygon","coordinates":[[[x,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y]]]}
+                elif tag in ("line","polyline","polygon"):
+                    if tag=="line": pts=[[num(el.attrib.get("x1")),num(el.attrib.get("y1"))],[num(el.attrib.get("x2")),num(el.attrib.get("y2"))]]
+                    else:
+                        import re
+                        vals=[float(v) for v in re.findall(r"[-+]?(?:\d*\.)?\d+(?:[eE][-+]?\d+)?",el.attrib.get("points",""))]
+                        pts=[vals[i:i+2] for i in range(0,len(vals)-1,2)]
+                    if len(pts)>1:
+                        if tag=="polygon":
+                            if pts[0]!=pts[-1]: pts.append(pts[0])
+                            geom={"type":"Polygon","coordinates":[pts]}
+                        else: geom={"type":"LineString","coordinates":pts}
+                if geom: feats.append({"type":"Feature","properties":props,"geometry":geom})
+            data={"type":"FeatureCollection","features":feats}
+            if not feats: raise ValueError("Aucune forme SVG simple détectée (rect, cercle, ligne, polyligne ou polygone). Les tracés complexes ne sont pas convertis.")
+        elif name.endswith(".pdf"):
+            try: import fitz
+            except ImportError: raise ValueError("Import PDF nécessite PyMuPDF. Installez la dépendance pymupdf puis relancez.")
+            import tempfile
+            with tempfile.NamedTemporaryFile(suffix=".pdf") as f:
+                f.write(raw); f.flush(); doc=fitz.open(f.name); feats=[]
+                for page_no,page in enumerate(doc):
+                    for drawing in page.get_drawings():
+                        pts=[]
+                        for item in drawing.get("items",[]):
+                            op=item[0]
+                            if op=="l":
+                                for pt in item[1:3]: pts.append([float(pt.x),float(-pt.y)])
+                            elif op=="re":
+                                r=item[1]; pts.extend([[r.x0,-r.y0],[r.x1,-r.y0],[r.x1,-r.y1],[r.x0,-r.y1],[r.x0,-r.y0]])
+                            elif op=="qu":
+                                q=item[1]
+                                pts.extend([[float(pt.x),float(-pt.y)] for pt in [q.ul,q.ur,q.lr,q.ll,q.ul]])
+                        if len(pts)>1:
+                            closed=pts[0]==pts[-1]
+                            geom={"type":"Polygon","coordinates":[pts]} if closed and len(pts)>=4 else {"type":"LineString","coordinates":pts}
+                            feats.append({"type":"Feature","properties":{"page":page_no+1,"fill":str(drawing.get("fill")),"stroke":str(drawing.get("color"))},"geometry":geom})
+                    for block in page.get_text("blocks"):
+                        x0,y0,x1,y1=block[:4]
+                        if str(block[4]).strip(): feats.append({"type":"Feature","properties":{"page":page_no+1,"text":str(block[4]).strip()[:250]},"geometry":{"type":"Point","coordinates":[float(x0),float(-y0)]}})
+                data={"type":"FeatureCollection","features":feats}
+            if not feats: raise ValueError("Aucun tracé ni texte exploitable trouvé dans le PDF.")
         elif name.endswith(".dxf"):
             try: import ezdxf
             except ImportError: raise ValueError("Import DWG/DXF nécessite ezdxf; installez la dépendance puis relancez.")
@@ -408,7 +466,7 @@ async def import_vector(file: UploadFile = File(...)):
                     if geom: feats.append({"type":"Feature","properties":{"layer":ent.dxf.layer,"cad_type":typ},"geometry":geom})
                 data={"type":"FeatureCollection","features":feats}
         else:
-            raise ValueError("Formats pris en charge : GeoJSON, KML, Shapefile ZIP et DXF.")
+            raise ValueError("Formats pris en charge : GeoJSON, KML, Shapefile ZIP, DXF, SVG simple et PDF vectoriel.")
         if data.get("type")=="Feature": data={"type":"FeatureCollection","features":[data]}
         if data.get("type")!="FeatureCollection" or not isinstance(data.get("features"),list): raise ValueError("GeoJSON invalide")
         return data
