@@ -353,9 +353,27 @@ def load_settings():
 @app.get("/api/settings")
 def get_settings(): return load_settings()
 
+
+@app.get("/api/resources")
+def resources():
+    import os
+    return {"cpu_count": max(1, os.cpu_count() or 1)}
+
 @app.post("/api/settings")
 def set_settings(s: dict):
+    cpu_count = max(1, os.cpu_count() or 1)
+    try:
+        cpu_workers = int(s.get("cpu_workers", min(4, cpu_count)))
+    except (TypeError, ValueError):
+        cpu_workers = min(4, cpu_count)
+    cpu_workers = max(1, min(cpu_count, cpu_workers))
+    try:
+        ram_limit_gb = int(s.get("ram_limit_gb", 4))
+    except (TypeError, ValueError):
+        ram_limit_gb = 4
+    ram_limit_gb = max(1, min(128, ram_limit_gb))
     keep = {"mapbox": str(s.get("mapbox", "")), "google": str(s.get("google", "")), "opentopo": str(s.get("opentopo", "")), "theme": str(s.get("theme", "dark")), "out_dir": str(s.get("out_dir", "")),
+            "cpu_workers": cpu_workers, "ram_limit_gb": ram_limit_gb,
             "s3": {k: str(v) for k, v in (s.get("s3") or {}).items()}}
     SETTINGS.write_text(json.dumps(keep)); return {"ok": True}
 

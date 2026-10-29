@@ -143,14 +143,14 @@ dialog{background:var(--bg2);color:var(--tx);border:1px solid var(--acc)}dialog:
   <optgroup label="Mapbox (token)"><option value="mbs">Mapbox Satellite</option><option value="mbr">Mapbox Rues</option><option value="mbo">Mapbox Outdoors</option></optgroup>
   <optgroup label="Google (clé API)"><option value="gr">Google Plan</option><option value="gs">Google Satellite</option></optgroup>
  </select>
- <button id="b-theme" title="Passer en mode clair">☀</button><button id="cfg" title="Tokens et clés API">⚙ Clés</button><button id="b-diag">🔧 Diagnostic</button>
+ <button id="b-theme" title="Passer en mode clair">☀</button><button id="cfg" title="Tokens et clés API">⚿ Clés</button><button id="b-options" title="Options de performance">⚙ Options</button><button id="b-diag">🔧 Diagnostic</button>
  <button id="undo" title="Ctrl+Z">↶ Annuler</button><button id="redo" title="Ctrl+Y">↷ Rétablir</button>
  <button id="go" disabled>Géoréférencer</button>
 </header>
 <div id="ws">
  <div id="landing"><div class="lw"><img class="lico" src="/icon.png" alt=""><h1>KalipheTiles</h1>
   <p>Géoréférencez vos cartes et images, assemblez-les en collage, exportez tuiles, GeoTIFF, MNT et heightmaps.</p>
-  <div class="lb"><button class="big" id="l-open">🖼 Ouvrir une image</button><button class="big" id="l-proj">📂 Ouvrir un projet</button></div>
+  <div class="lb"><button class="big" id="l-open">🖼 Ouvrir une image</button><button class="big" id="l-proj">📂 Ouvrir un projet</button></div><div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-top:10px"><button type="button" id="logo-pick">🖼 Personnaliser le logo</button><input id="logo-file" type="file" accept="image/*" hidden><button type="button" id="logo-reset">Logo par défaut</button></div>
   <small>ou glissez-déposez ici une image (JPG, PNG, TIFF, MNT 16 bits) ou un projet .ktproj</small>
   <ol><li>Chargez l'image : chaque image s'ouvre dans un nouvel onglet.</li><li>Posez 3 points ou plus : cliquez sur la loupe 🔍 dans l'image puis sur la carte (ou saisissez les coordonnées).</li><li>L'aperçu apparaît tout de suite sur la carte ; exportez quand c'est bon.</li></ol></div></div>
  <div class="win" id="w-img" style="left:6px;top:6px;width:46%;height:56%"><div class="wh"><span>🖼 Image à géoréférencer</span><span class="wbtn"><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
@@ -158,7 +158,7 @@ dialog{background:var(--bg2);color:var(--tx);border:1px solid var(--acc)}dialog:
  <div class="win" id="w-map" style="left:48%;top:6px;width:51%;height:96%"><div class="wh"><span>🗺 Carte</span><span class="wbtn"><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
   <div class="wb"><div id="mapwrap">
 
-<div id="map"></div><div class="map-tools" id="map-tools" aria-label="Outils de mesure et repères"><b>Outils carte</b><button type="button" id="measure-line" title="Mesurer une ligne">↗ Ligne</button><button type="button" id="measure-path" title="Mesurer une polyligne (double-clic pour terminer)">〰 Polyligne</button><button type="button" id="measure-area" title="Mesurer une surface (double-clic pour terminer)">⬠ Surface</button><button type="button" id="measure-finish" title="Terminer la mesure">✓ Terminer</button><button type="button" id="measure-clear" title="Effacer les mesures">Effacer</button><label title="Espacement des carrés de la grille">Grille <input id="grid-spacing" type="number" min="1" step="1" value="100" aria-label="Espacement de la grille en mètres"> m</label><button type="button" id="grid-toggle" title="Afficher ou masquer une grille métrique">▦ Grille</button><button type="button" id="ref-line" title="Dessiner une ligne de repère">⌁ Repère</button><span id="map-tool-status" class="tool-status">Prêt</span></div>
+<div id="map"></div><div class="map-tools" id="map-tools" aria-label="Outils de mesure et repères"><b>Outils carte</b><button type="button" id="measure-line" title="Mesurer une ligne">↗ Ligne</button><button type="button" id="measure-path" title="Mesurer une polyligne (double-clic pour terminer)">〰 Polyligne</button><button type="button" id="measure-area" title="Mesurer une surface (double-clic pour terminer)">⬠ Surface</button><button type="button" id="measure-finish" title="Terminer la mesure">✓ Terminer</button><button type="button" id="measure-clear" title="Effacer les mesures et dessins">Effacer</button><button type="button" id="measure-undo" title="Annuler mesure/dessin (Ctrl+Z)">↶</button><button type="button" id="measure-redo" title="Rétablir mesure/dessin (Ctrl+Y)">↷</button><label>Couleur <input id="draw-color" type="color" value="#ff8c00" aria-label="Couleur des lignes" style="width:32px;padding:1px"></label><label>Épaisseur <input id="draw-width" type="number" min="1" max="12" value="3" aria-label="Épaisseur des lignes" style="width:48px"></label><label title="Espacement des carrés de la grille">Pas <input id="grid-spacing" type="number" min="1" step="1" value="100" aria-label="Espacement de la grille en mètres"> m</label><button type="button" id="grid-polygon" title="Dessiner le polygone qui délimite la grille">⬠ Polygone grille</button><button type="button" id="grid-toggle" title="Afficher une grille uniquement dans le polygone dessiné">▦ Grille polygone</button><button type="button" id="ref-line" title="Dessiner une ligne de repère">⌁ Repère</button><span id="map-tool-status" class="tool-status">Prêt</span></div>
   <div class="mbar"><button id="b-ovt" title="Masquer / afficher les outils sur la carte">☰</button>
    <label title="Afficher / masquer l'image sur la carte"><input type="checkbox" id="imgvis" checked> Image</label>
    <input type="range" id="opac" min="0" max="1" step=".05" value=".85" title="Transparence de l'image">
@@ -269,6 +269,19 @@ dialog{background:var(--bg2);color:var(--tx);border:1px solid var(--acc)}dialog:
  Clé API Google (Map Tiles API activée) <input id="k-g" placeholder="AIza…">
  <small>Enregistrés en clair sur ce PC (fichier .kaliphetiles.json dans votre dossier utilisateur).</small>
  <div class="row" style="justify-content:flex-end;margin-top:12px"><button id="k-cancel">Annuler</button><button id="k-save" style="background:#fca311">Enregistrer</button></div>
+</dialog>
+<dialog id="resdlg" style="min-width:min(420px,92vw)">
+ <h3 style="margin-top:0">Options de performance</h3>
+ <p>Réglez les ressources souhaitées pour les traitements compatibles.</p>
+ <label for="cpu-workers">Cœurs CPU à utiliser</label>
+ <select id="cpu-workers" style="width:100%;margin:5px 0 12px"></select>
+ <small id="cpu-note">Le nombre maximal dépend du processeur de cette machine.</small>
+ <label for="ram-limit">Budget mémoire souhaité (RAM)</label>
+ <select id="ram-limit" style="width:100%;margin:5px 0 12px">
+  <option value="1">1 Go</option><option value="2">2 Go</option><option value="4">4 Go</option><option value="8">8 Go</option><option value="16">16 Go</option><option value="32">32 Go</option><option value="64">64 Go</option><option value="128">128 Go</option>
+ </select>
+ <small>Le budget RAM est un réglage indicatif : il ne constitue pas une limite système stricte. Les traitements qui ne prennent pas en charge ces réglages peuvent ne pas en tenir compte.</small>
+ <div class="row" style="justify-content:flex-end;margin-top:14px"><button id="res-cancel">Annuler</button><button id="res-save" style="background:#fca311">Enregistrer</button></div>
 </dialog>
 <script>
 const $=s=>document.querySelector(s), st=t=>$("#status").innerHTML=t;
@@ -387,9 +400,24 @@ map.on("error",async e=>{
 });
 
 // ---------- Clés ----------
-fetch("/api/settings").then(r=>r.json()).then(s=>{cfg={mapbox:s.mapbox||"",google:s.google||"",opentopo:s.opentopo||"",s3:s.s3||{},theme:s.theme||"dark",out_dir:s.out_dir||""};loadS3();$("#ot-key").value=cfg.opentopo;if(cfg.theme==="light")setTheme(false);if(cfg.out_dir){exportDest=cfg.out_dir;$("#destv").textContent=$("#destv2").textContent=cfg.out_dir}});
+fetch("/api/settings").then(r=>r.json()).then(s=>{cfg={mapbox:s.mapbox||"",google:s.google||"",opentopo:s.opentopo||"",s3:s.s3||{},theme:s.theme||"dark",out_dir:s.out_dir||"",cpu_workers:s.cpu_workers||4,ram_limit_gb:s.ram_limit_gb||4};loadS3();$("#ot-key").value=cfg.opentopo;if(cfg.theme==="light")setTheme(false);if(cfg.out_dir){exportDest=cfg.out_dir;$("#destv").textContent=$("#destv2").textContent=cfg.out_dir}});
 function openCfg(){$("#k-mb").value=cfg.mapbox;$("#k-g").value=cfg.google;$("#dlg").showModal()}
 $("#cfg").onclick=openCfg; $("#k-cancel").onclick=()=>$("#dlg").close();
+async function openResourceOptions(){
+ const r=await fetch("/api/resources");const hw=await r.json();const sel=$("#cpu-workers");
+ sel.innerHTML="";for(let n=1;n<=hw.cpu_count;n++){const o=document.createElement("option");o.value=n;o.textContent=`${n} cœur${n>1?"s":""}`;sel.appendChild(o);}
+ sel.value=Math.min(hw.cpu_count,Math.max(1,Number(cfg.cpu_workers||Math.min(4,hw.cpu_count))));
+ $("#cpu-note").textContent=`Processeur détecté : ${hw.cpu_count} cœur(s) logique(s).`;
+ $("#ram-limit").value=String(cfg.ram_limit_gb||4);$("#resdlg").showModal();
+}
+$("#b-options").onclick=openResourceOptions;
+$("#res-cancel").onclick=()=>$("#resdlg").close();
+$("#res-save").onclick=async()=>{
+ cfg.cpu_workers=Number($("#cpu-workers").value)||1;cfg.ram_limit_gb=Number($("#ram-limit").value)||4;
+ const r=await fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
+ if(!r.ok){st("⚠️ Impossible d’enregistrer les options de performance.");return;}
+ $("#resdlg").close();st("Options de performance enregistrées.");
+};
 $("#k-save").onclick=async()=>{keyVer++;
  cfg={...cfg,mapbox:$("#k-mb").value.trim(),google:$("#k-g").value.trim()};
  await fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
@@ -539,18 +567,49 @@ function redraw(){
 function tryDone(){if(pend.img&&pend.geo){gcps.push({...pend.img,...pend.geo});pend={img:null,geo:null};sel=gcps.length-1}redraw()}
 function setImg(px,py){commit();pend.img={px,py};tryDone()}
 function setGeo(lon,lat){commit();pend.geo={lon,lat};tryDone()}
-// Mesures géodésiques et grille métrique de travail
-let measureMode=null, measurePts=[], measureFeatures=[], gridShown=false, refMode=false;
-function hav(a,b){const R=6371008.8,rad=x=>x*Math.PI/180, dLat=rad(b[1]-a[1]),dLon=rad(b[0]-a[0]),la=rad(a[1]),lb=rad(b[1]);const h=Math.sin(dLat/2)**2+Math.cos(la)*Math.cos(lb)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(h)));}
+// Mesures géodésiques, dessin et grille limitée à un polygone
+let measureMode=null, measurePts=[], measureFeatures=[], gridShown=false, refMode=false, gridPolygon=[], measureUndo=[], measureRedo=[];
+function snapshotMeasure(){measureUndo.push(JSON.stringify({features:measureFeatures,polygon:gridPolygon}));if(measureUndo.length>100)measureUndo.shift();measureRedo=[];}
+function restoreMeasure(v){const o=JSON.parse(v);measureFeatures=o.features||[];gridPolygon=o.polygon||[];updateMeasure();}
+function undoMeasure(){if(!measureUndo.length)return;measureRedo.push(JSON.stringify({features:measureFeatures,polygon:gridPolygon}));restoreMeasure(measureUndo.pop());}
+function redoMeasure(){if(!measureRedo.length)return;measureUndo.push(JSON.stringify({features:measureFeatures,polygon:gridPolygon}));restoreMeasure(measureRedo.pop());}
+function hav(a,b){const R=6371008.8,rad=x=>x*Math.PI/180,dLat=rad(b[1]-a[1]),dLon=rad(b[0]-a[0]),la=rad(a[1]),lb=rad(b[1]);const h=Math.sin(dLat/2)**2+Math.cos(la)*Math.cos(lb)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(h)));}
 function fmtDist(m){return m>=1000?(m/1000).toFixed(2)+' km':m.toFixed(1)+' m'}
 function polyDist(a){let n=0;for(let i=1;i<a.length;i++)n+=hav(a[i-1],a[i]);return n}
-function polyArea(coords){if(coords.length<3)return 0;const R=6378137, rad=x=>x*Math.PI/180;let s=0;for(let i=0,j=coords.length-1;i<coords.length;j=i++){s+=rad(coords[i][0]-coords[j][0])*(2+Math.sin(rad(coords[j][1]))+Math.sin(rad(coords[i][1])))}return Math.abs(s*R*R/2)}
-function ensureMeasureSource(){if(!map.getSource('user-measure')){map.addSource('user-measure',{type:'geojson',data:{type:'FeatureCollection',features:[]}});map.addLayer({id:'user-measure-line',type:'line',source:'user-measure',filter:['==',['geometry-type'],'LineString'],paint:{'line-color':'#ff8c00','line-width':3,'line-dasharray':[2,1]}});map.addLayer({id:'user-measure-area',type:'fill',source:'user-measure',filter:['==',['geometry-type'],'Polygon'],paint:{'fill-color':'#fca311','fill-opacity':0.18}});map.addLayer({id:'user-measure-outline',type:'line',source:'user-measure',paint:{'line-color':'#f08c00','line-width':2}});}}
-function updateMeasure(){ensureMeasureSource();const fs=[...measureFeatures];if(measurePts.length>1){let pts=measurePts.slice();if(measureMode==='area'&&pts.length>=3){const ring=[...pts,pts[0]];fs.push({type:'Feature',properties:{kind:'area'},geometry:{type:'Polygon',coordinates:[ring]}})}else fs.push({type:'Feature',properties:{kind:'line'},geometry:{type:'LineString',coordinates:pts}})}map.getSource('user-measure').setData({type:'FeatureCollection',features:fs});}
-function setMeasure(mode){measureMode=mode;refMode=false;measurePts=[];document.querySelectorAll('#map-tools button').forEach(b=>b.classList.remove('on'));document.getElementById(mode==='line'?'measure-line':mode==='path'?'measure-path':mode==='area'?'measure-area':'ref-line')?.classList.add('on');document.getElementById('map-tool-status').textContent=mode==='area'?'Cliquez les sommets, double-clic pour terminer':mode==='ref'?'Cliquez les deux extrémités du repère':'Cliquez les points, double-clic pour terminer';map.getCanvas().style.cursor='crosshair';}
-function finishMeasure(){if(refMode&&measurePts.length>=2){measureFeatures.push({type:'Feature',properties:{kind:'reference'},geometry:{type:'LineString',coordinates:measurePts.slice(0,2)}});document.getElementById('map-tool-status').textContent='Ligne de repère créée · '+fmtDist(polyDist(measurePts.slice(0,2)));}else if(measureMode==='area'&&measurePts.length>=3){const a=polyArea(measurePts);measureFeatures.push({type:'Feature',properties:{kind:'area',area_m2:a},geometry:{type:'Polygon',coordinates:[[...measurePts,measurePts[0]]]}});document.getElementById('map-tool-status').textContent='Surface : '+(a>=1e6?(a/1e6).toFixed(3)+' km²':a.toFixed(1)+' m²');}else if(measurePts.length>=2){const d=polyDist(measurePts);measureFeatures.push({type:'Feature',properties:{kind:'measurement',distance_m:d},geometry:{type:'LineString',coordinates:measurePts.slice()}});document.getElementById('map-tool-status').textContent='Distance : '+fmtDist(d);}measurePts=[];measureMode=null;refMode=false;map.getCanvas().style.cursor='';document.querySelectorAll('#map-tools button').forEach(b=>b.classList.remove('on'));updateMeasure();}
-function drawMetricGrid(){ensureMeasureSource();const step=Math.max(1,Number(document.getElementById('grid-spacing').value)||100), b=map.getBounds(),lat0=(b.getSouth()+b.getNorth())/2, mlat=111320, mlon=Math.max(1000,111320*Math.cos(lat0*Math.PI/180)), features=[];const lonStep=step/mlon,latStep=step/mlat;for(let x=Math.floor(b.getWest()/lonStep)*lonStep;x<=b.getEast();x+=lonStep)features.push({type:'Feature',properties:{kind:'grid'},geometry:{type:'LineString',coordinates:[[x,b.getSouth()],[x,b.getNorth()]]}});for(let y=Math.floor(b.getSouth()/latStep)*latStep;y<=b.getNorth();y+=latStep)features.push({type:'Feature',properties:{kind:'grid'},geometry:{type:'LineString',coordinates:[[b.getWest(),y],[b.getEast(),y]]}});const base=measureFeatures.filter(f=>f.properties?.kind!=='grid');measureFeatures=[...base,...features];updateMeasure();}
-document.getElementById('measure-line').onclick=()=>setMeasure('line');document.getElementById('measure-path').onclick=()=>setMeasure('path');document.getElementById('measure-area').onclick=()=>setMeasure('area');document.getElementById('ref-line').onclick=()=>setMeasure('ref');document.getElementById('measure-finish').onclick=finishMeasure;document.getElementById('measure-clear').onclick=()=>{measurePts=[];measureFeatures=[];updateMeasure();document.getElementById('map-tool-status').textContent='Mesures effacées'};document.getElementById('grid-toggle').onclick=()=>{gridShown=!gridShown;document.getElementById('grid-toggle').classList.toggle('on',gridShown);if(gridShown)drawMetricGrid();else{measureFeatures=measureFeatures.filter(f=>f.properties?.kind!=='grid');updateMeasure()}};document.getElementById('grid-spacing').onchange=()=>{if(gridShown)drawMetricGrid()};map.on('moveend',()=>{if(gridShown)drawMetricGrid()});
+function polyArea(coords){if(coords.length<3)return 0;const R=6378137,rad=x=>x*Math.PI/180;let s=0;for(let i=0,j=coords.length-1;i<coords.length;j=i++){s+=rad(coords[i][0]-coords[j][0])*(2+Math.sin(rad(coords[j][1]))+Math.sin(rad(coords[i][1])))}return Math.abs(s*R*R/2)}
+function inPoly(pt,poly){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if(((a[1]>pt[1])!==(b[1]>pt[1]))&&(pt[0]<(b[0]-a[0])*(pt[1]-a[1])/(b[1]-a[1])+a[0]))inside=!inside;}return inside;}
+function ensureMeasureSource(){if(!map.getSource('user-measure')){map.addSource('user-measure',{type:'geojson',data:{type:'FeatureCollection',features:[]}});map.addLayer({id:'user-measure-line',type:'line',source:'user-measure',filter:['==',['geometry-type'],'LineString'],paint:{'line-color':['coalesce',['get','color'],'#ff8c00'],'line-width':['coalesce',['get','width'],3],'line-dasharray':[2,1]}});map.addLayer({id:'user-measure-area',type:'fill',source:'user-measure',filter:['==',['geometry-type'],'Polygon'],paint:{'fill-color':['coalesce',['get','color'],'#fca311'],'fill-opacity':0.18}});map.addLayer({id:'user-measure-outline',type:'line',source:'user-measure',paint:{'line-color':['coalesce',['get','color'],'#f08c00'],'line-width':['coalesce',['get','width'],2]}});}}
+function updateMeasure(){ensureMeasureSource();const fs=[...measureFeatures];if(gridPolygon.length>1){const ring=[...gridPolygon,...(gridPolygon.length>=3?[gridPolygon[0]]:[])];fs.push({type:'Feature',properties:{kind:'grid-boundary',color:drawColor(),width:drawWidth()},geometry:{type:'LineString',coordinates:ring}})}if(measurePts.length>1){let pts=measurePts.slice();if((measureMode==='area'||measureMode==='gridpoly')&&pts.length>=3){const ring=[...pts,pts[0]];fs.push({type:'Feature',properties:{kind:'area',color:drawColor(),width:drawWidth()},geometry:{type:'Polygon',coordinates:[ring]}})}else fs.push({type:'Feature',properties:{kind:'line',color:drawColor(),width:drawWidth()},geometry:{type:'LineString',coordinates:pts}})}map.getSource('user-measure').setData({type:'FeatureCollection',features:fs});}
+function drawColor(){return document.getElementById('draw-color').value||'#ff8c00'}function drawWidth(){return Math.max(1,Math.min(12,Number(document.getElementById('draw-width').value)||3))}
+function setMeasure(mode){measureMode=mode;refMode=mode==='ref';measurePts=[];document.querySelectorAll('#map-tools button').forEach(b=>b.classList.remove('on'));document.getElementById(mode==='line'?'measure-line':mode==='path'?'measure-path':mode==='area'?'measure-area':mode==='gridpoly'?'grid-polygon':'ref-line')?.classList.add('on');document.getElementById('map-tool-status').textContent=mode==='gridpoly'?'Cliquez les sommets du polygone, double-clic pour fermer':mode==='area'?'Cliquez les sommets, double-clic pour terminer':mode==='ref'?'Cliquez les deux extrémités du repère':'Cliquez les points, double-clic pour terminer';map.getCanvas().style.cursor='crosshair';}
+function finishMeasure(){if(measureMode==='gridpoly'&&measurePts.length>=3){snapshotMeasure();gridPolygon=measurePts.slice();measureFeatures=measureFeatures.filter(f=>f.properties?.kind!=='grid');document.getElementById('map-tool-status').textContent='Polygone de grille défini';if(gridShown)drawMetricGrid();}else if(refMode&&measurePts.length>=2){snapshotMeasure();measureFeatures.push({type:'Feature',properties:{kind:'reference',color:drawColor(),width:drawWidth()},geometry:{type:'LineString',coordinates:measurePts.slice(0,2)}});document.getElementById('map-tool-status').textContent='Ligne de repère créée · '+fmtDist(polyDist(measurePts.slice(0,2)));}else if(measureMode==='area'&&measurePts.length>=3){snapshotMeasure();const a=polyArea(measurePts);measureFeatures.push({type:'Feature',properties:{kind:'area',area_m2:a,color:drawColor(),width:drawWidth()},geometry:{type:'Polygon',coordinates:[[...measurePts,measurePts[0]]]}});document.getElementById('map-tool-status').textContent='Surface : '+(a>=1e6?(a/1e6).toFixed(3)+' km²':a.toFixed(1)+' m²');}else if(measurePts.length>=2){snapshotMeasure();const d=polyDist(measurePts);measureFeatures.push({type:'Feature',properties:{kind:'measurement',distance_m:d,color:drawColor(),width:drawWidth()},geometry:{type:'LineString',coordinates:measurePts.slice()}});document.getElementById('map-tool-status').textContent='Distance : '+fmtDist(d);}measurePts=[];measureMode=null;refMode=false;map.getCanvas().style.cursor='';document.querySelectorAll('#map-tools button').forEach(b=>b.classList.remove('on'));updateMeasure();}
+function drawMetricGrid(){
+ ensureMeasureSource();
+ const status=document.getElementById('map-tool-status');
+ if(gridPolygon.length<3){status.textContent='Dessinez d’abord un polygone avec « Polygone grille »';return;}
+ const step=Math.max(1,Number(document.getElementById('grid-spacing').value)||100),poly=gridPolygon;
+ // Projection locale en mètres : la grille et le découpage utilisent le même repère.
+ const lat0=poly.reduce((a,p)=>a+p[1],0)/poly.length,lon0=poly.reduce((a,p)=>a+p[0],0)/poly.length;
+ const mx=111320*Math.max(.01,Math.cos(lat0*Math.PI/180)),my=110574;
+ const xy=poly.map(p=>[(p[0]-lon0)*mx,(p[1]-lat0)*my]);
+ const toLL=p=>[p[0]/mx+lon0,p[1]/my+lat0];
+ const inside=(p)=>{let yes=false;for(let i=0,j=xy.length-1;i<xy.length;j=i++){const a=xy[i],b=xy[j];if(((a[1]>p[1])!==(b[1]>p[1]))&&(p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0]))yes=!yes;}return yes;};
+ const xs=xy.map(p=>p[0]),ys=xy.map(p=>p[1]),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),features=[];
+ // Intersection exacte d'une droite de grille avec le contour; chaque intervalle intérieur devient un segment.
+ function clipVertical(x){const hits=[];for(let i=0,j=xy.length-1;i<xy.length;j=i++){const a=xy[j],b=xy[i];if((a[0]<=x&&b[0]>x)||(b[0]<=x&&a[0]>x)){const y=a[1]+(x-a[0])*(b[1]-a[1])/(b[0]-a[0]);hits.push(y);}}hits.sort((a,b)=>a-b);for(let k=0;k+1<hits.length;k+=2){const y1=hits[k],y2=hits[k+1];if(y2-y1>.01&&inside([x,(y1+y2)/2]))addLine([x,y1],[x,y2]);}}
+ function clipHorizontal(y){const hits=[];for(let i=0,j=xy.length-1;i<xy.length;j=i++){const a=xy[j],b=xy[i];if((a[1]<=y&&b[1]>y)||(b[1]<=y&&a[1]>y)){const x=a[0]+(y-a[1])*(b[0]-a[0])/(b[1]-a[1]);hits.push(x);}}hits.sort((a,b)=>a-b);for(let k=0;k+1<hits.length;k+=2){const x1=hits[k],x2=hits[k+1];if(x2-x1>.01&&inside([(x1+x2)/2,y]))addLine([x1,y],[x2,y]);}}
+ function addLine(a,b){features.push({type:'Feature',properties:{kind:'grid',color:drawColor(),width:drawWidth()},geometry:{type:'LineString',coordinates:[toLL(a),toLL(b)]}})}
+ const xStart=Math.ceil(xmin/step)*step,yStart=Math.ceil(ymin/step)*step;
+ for(let x=xStart;x<=xmax+1e-7;x+=step)clipVertical(x);
+ for(let y=yStart;y<=ymax+1e-7;y+=step)clipHorizontal(y);
+ measureFeatures=[...measureFeatures.filter(f=>f.properties?.kind!=='grid'),...features];updateMeasure();
+ status.textContent=`Grille limitée au polygone : ${features.length} segments · pas ${step} m`;
+}
+document.getElementById('measure-line').onclick=()=>setMeasure('line');document.getElementById('measure-path').onclick=()=>setMeasure('path');document.getElementById('measure-area').onclick=()=>setMeasure('area');document.getElementById('ref-line').onclick=()=>setMeasure('ref');document.getElementById('grid-polygon').onclick=()=>setMeasure('gridpoly');document.getElementById('measure-finish').onclick=finishMeasure;document.getElementById('measure-undo').onclick=undoMeasure;document.getElementById('measure-redo').onclick=redoMeasure;document.getElementById('measure-clear').onclick=()=>{snapshotMeasure();measurePts=[];measureFeatures=[];gridPolygon=[];updateMeasure();document.getElementById('map-tool-status').textContent='Mesures et dessins effacés'};document.getElementById('grid-toggle').onclick=()=>{gridShown=!gridShown;document.getElementById('grid-toggle').classList.toggle('on',gridShown);if(gridShown){snapshotMeasure();drawMetricGrid();}else{snapshotMeasure();measureFeatures=measureFeatures.filter(f=>f.properties?.kind!=='grid');updateMeasure()}};document.getElementById('grid-spacing').onchange=()=>{if(gridShown){snapshotMeasure();drawMetricGrid()}};document.getElementById('draw-color').onchange=()=>updateMeasure();document.getElementById('draw-width').onchange=()=>updateMeasure();map.on('moveend',()=>{if(gridShown)drawMetricGrid()});
+// Logo personnalisable du panneau d’accueil (persisté localement)
+const logoImg=document.querySelector('#landing .lico');try{const savedLogo=localStorage.getItem('kaliphetiles_landing_logo');if(savedLogo)logoImg.src=savedLogo;}catch(_){}document.getElementById('logo-pick').onclick=()=>document.getElementById('logo-file').click();document.getElementById('logo-file').onchange=e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{localStorage.setItem('kaliphetiles_landing_logo',r.result);logoImg.src=r.result;}catch(_){alert('Image trop volumineuse pour être mémorisée. Choisissez un logo plus petit.')}};r.readAsDataURL(f);};document.getElementById('logo-reset').onclick=()=>{try{localStorage.removeItem('kaliphetiles_landing_logo')}catch(_){}logoImg.src='/icon.png';};
+// Prévenir la fermeture si le projet contient des modifications. Les navigateurs imposent leur dialogue natif.
+let projectDirty=false;const markDirty=()=>{if(layers.length)projectDirty=true};window.addEventListener('beforeunload',e=>{if(projectDirty&&layers.length){e.preventDefault();e.returnValue='Votre projet n’est pas enregistré. Voulez-vous quitter sans enregistrer ?';return e.returnValue;}});document.getElementById('b-savetop')?.addEventListener('click',()=>{setTimeout(()=>{projectDirty=false},700)});document.getElementById('b-save')?.addEventListener('click',()=>{setTimeout(()=>{projectDirty=false},700)});document.getElementById('b-saveas')?.addEventListener('click',()=>{setTimeout(()=>{projectDirty=false},700)});document.getElementById('file')?.addEventListener('change',markDirty);document.getElementById('measure-clear')?.addEventListener('click',markDirty);document.getElementById('grid-polygon')?.addEventListener('click',markDirty);document.getElementById('measure-line')?.addEventListener('click',markDirty);document.getElementById('measure-path')?.addEventListener('click',markDirty);document.getElementById('measure-area')?.addEventListener('click',markDirty);
 
 
 document.getElementById('b-merge-images')?.addEventListener('click',async()=>{
@@ -1002,11 +1061,19 @@ $("#ot-save").onclick=async()=>{
  $("#ot-out").textContent="✅ Clé enregistrée";
 };
 $("#ot-test").onclick=async()=>{
- const o=$("#ot-out");o.textContent="Test de la connexion en cours…";await $("#ot-save").onclick();o.textContent="Test de la connexion en cours…";
+ const o=$("#ot-out"),btn=$("#ot-test");btn.disabled=true;o.textContent="Test de connexion OpenTopography…\n1. Enregistrement de la clé…";
  try{
-  const j=await (await fetch("/api/opentopo/diag")).json();
-  o.textContent=j.steps.map(s=>(s.ok?"✅ ":"❌ ")+s.step+" — "+(s.ok?(s.detail||"ok"):s.detail+(s.hint?"\n     → "+s.hint:""))).join("\n");
- }catch(e){o.textContent="⚠️ Diagnostic impossible : "+e}
+  cfg.opentopo=$("#ot-key").value.trim();
+  const saved=await fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
+  if(!saved.ok)throw new Error("Impossible d’enregistrer la clé (HTTP "+saved.status+")");
+  o.textContent="Test de connexion OpenTopography…\nVérification Internet, DNS, HTTPS et API (cela peut prendre jusqu’à une minute)…";
+  const response=await fetch("/api/opentopo/diag",{cache:"no-store"});
+  if(!response.ok)throw new Error("Le serveur de diagnostic répond HTTP "+response.status);
+  const j=await response.json();
+  o.textContent=(j.steps||[]).map(s=>(s.ok?"✅ ":"❌ ")+s.step+" — "+(s.detail|| (s.ok?"OK":"Échec"))+(Number.isFinite(s.ms)?" ("+s.ms+" ms)":"")+(!s.ok&&s.hint?"\n   ↳ "+s.hint:"" )).join("\n");
+  if(!j.steps?.length)o.textContent="⚠️ Le diagnostic n’a retourné aucune étape.";
+ }catch(e){o.textContent="❌ Test impossible : "+(e?.message||e)+"\nVérifiez que le serveur KalipheTiles est démarré."}
+ finally{btn.disabled=false;}
 };
 
 // ---------- Accueil, onglets d'images, calques sur la carte ----------
