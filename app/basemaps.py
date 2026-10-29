@@ -18,7 +18,7 @@ FREE = {
     "ignp": IGN.format("GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "image/png"),
     "igns": IGN.format("ORTHOIMAGERY.ORTHOPHOTOS", "image/jpeg"),
 }
-MAPBOX = {"mbs": "satellite-streets-v12", "mbr": "streets-v12", "mbo": "outdoors-v12"}
+MAPBOX = {"mbs": "satellite-v9", "mbss": "satellite-streets-v12", "mbr": "streets-v12", "mbo": "outdoors-v12"}
 GOOGLE = {"gr": "roadmap", "gs": "satellite"}
 _sessions = {}
 

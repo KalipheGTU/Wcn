@@ -16,3 +16,9 @@
 - Compilation syntaxique des modules Python.
 - Vérification syntaxique du JavaScript intégré via Node.js.
 - Pas de test de bout en bout effectué dans un navigateur connecté aux services distants.
+
+## Correctif du 29 octobre 2026
+- La page d'accueil a été isolée du nouveau ruban de travail : le ruban n'apparaît qu'une fois une image/projet ouvert, afin de ne pas remanier la landing page.
+- Le ruban de travail Office propose les onglets Accueil, Image, Géoréférencement, Carte, Affichage et Export, avec des raccourcis vers les commandes existantes.
+- La vue globe utilise d'abord MapLibre GL JS 5.6.2 depuis le CDN (projection globe prise en charge) et conserve la version locale en solution de repli hors ligne. La bascule attend le chargement du style et affiche les erreurs réelles dans la barre d'état.
+- Contrôles de syntaxe JavaScript et compilation Python effectués. La vue globe distante et les fonds de carte doivent encore être validés sur une machine connectée.
