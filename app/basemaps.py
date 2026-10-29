@@ -1,6 +1,5 @@
 """Fonds de carte servis par le programme lui-même (évite CORS / Referer / blocages de la fenêtre)."""
 import json, urllib.error, urllib.request
-from . import net
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import time
@@ -13,7 +12,6 @@ FREE = {
     "osm": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     "topo": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
     "esri": ESRI.format("World_Imagery"), "esrit": ESRI.format("World_Topo_Map"), "esrir": ESRI.format("World_Street_Map"),
-    "terrarium": "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
     "carto": "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
     "ignp": IGN.format("GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "image/png"),
     "igns": IGN.format("ORTHOIMAGERY.ORTHOPHOTOS", "image/jpeg"),
@@ -27,8 +25,11 @@ class TileError(Exception):
         super().__init__(msg); self.status, self.msg = status, msg
 
 def fetch_url(url, headers=None, data=None, method="GET", timeout=15):
+    h = {"User-Agent": UA, "Accept": "image/*,*/*"}; h.update(headers or {})
+    req = urllib.request.Request(url, data=data, method=method, headers=h)
     try:
-        return net.fetch(url, {"Accept": "image/*,*/*", **(headers or {})}, data, method, timeout)
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status, r.headers.get_content_type(), r.read()
     except urllib.error.HTTPError as e:
         raise TileError(e.code, f"le serveur a répondu HTTP {e.code}")
     except Exception as e:
@@ -85,4 +86,4 @@ def get_font(stack, rng, cache_dir):
     f = Path(cache_dir) / "fonts" / stack.replace(",", "_") / f"{rng}.pbf"
     if f.exists(): return f.read_bytes()
     _, _, body = fetch_url(f"https://demotiles.maplibre.org/font/{urllib.request.quote(stack)}/{rng}.pbf")
-    f.parent.mkdir(parents=True, exist_ok=True); f.write_bytes(body); return body
+    f.parent.mkdir(parents=True, exist_ok=True); f.write_bytes(body); return body 
