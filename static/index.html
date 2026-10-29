@@ -74,7 +74,7 @@ dialog input{width:100%;padding:6px;margin:4px 0 12px}dialog small{color:#555}
 #landing{position:absolute;inset:0;z-index:50;background:#2a2a2a url(/world.png) center/contain no-repeat;display:flex;align-items:center;justify-content:center;color:#eee}
 #landing.hide{display:none}
 #landing .lw{background:#14161cdd;border:1px solid #ffffff22;border-radius:14px;padding:26px 36px;text-align:center;max-width:560px;backdrop-filter:blur(3px)}
-#landing .lico{width:84px;height:84px;object-fit:contain}#landing h1{margin:6px 0 4px;font-size:30px;color:#fca311}
+#landing .lico{width:132px;height:132px;object-fit:contain;filter:drop-shadow(0 8px 18px #0005)}#landing h1{margin:6px 0 4px;font-size:30px;color:#fca311}
 #landing p{margin:0 0 14px;color:#cfd2d8}#landing .lb{display:flex;gap:12px;justify-content:center;margin:10px 0}
 #landing button.big{padding:12px 22px;font-size:15px;background:#fca311;color:#14100a;border:0;font-weight:700;border-radius:8px;cursor:pointer}
 #landing button.big+button.big{background:#262a33;color:#eee;border:1px solid #fca311}
@@ -159,6 +159,38 @@ header button#go{background:var(--office-blue)!important;border-color:var(--offi
 .mbar{background:#fffffff0;border:1px solid #d6dfec;color:#26364f;backdrop-filter:blur(8px)}
 #status{flex:0 0 auto;background:#f5f7fb;color:#475569;border-top:1px solid #dbe3ee;padding:5px 12px}
 
+/* Deep UX pass: Office-style hierarchy, accessible controls and configurable control points. */
+:root{--gcp-marker-size:46px;--gcp-marker-color:#185abd;--gcp-marker-opacity:1;--gcp-label-size:11px}
+#landing .lw{max-width:760px;padding:30px 42px}
+#landing .brand-row{gap:18px;align-items:center}
+#landing .brand-row>div{text-align:left}
+#landing .brand-controls,#landing .login-row{flex-wrap:wrap;justify-content:center}
+#landing .brand-controls{gap:8px}
+#landing .login-row{gap:10px}
+#landing .login-row>div{min-width:220px}
+#landing .login-row input{padding:9px 11px;border-radius:8px;border:1px solid #64748b;background:#0f172a;color:#fff}
+header{position:relative}
+header .app-menu{position:relative}
+header .app-menu summary{font-weight:650}
+header .menu-pop a{display:block;padding:8px 9px;color:#174ea6;text-decoration:none;border-radius:5px}
+header .menu-pop a:hover{background:#e8f0fe}
+#general-settings{width:min(560px,94vw);max-height:85vh;overflow:auto;border:1px solid #cbd5e1;border-radius:16px;padding:22px;background:var(--office-panel,#fff);color:var(--office-text,#172033);box-shadow:0 20px 70px #0b1e3a35}
+#general-settings::backdrop,#resdlg::backdrop{background:#10182788;backdrop-filter:blur(3px)}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.settings-grid label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:650}
+.settings-grid input,.settings-grid select{width:100%;min-height:36px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#172033;padding:6px 9px}
+.window-history{display:inline-flex;gap:3px;margin-right:5px}
+.window-history button{font-size:12px;min-width:28px!important;padding:2px 6px!important}
+.pt{width:var(--gcp-marker-size,46px)!important;height:var(--gcp-marker-size,46px)!important;opacity:var(--gcp-marker-opacity,1);filter:hue-rotate(var(--gcp-marker-hue,0deg))}
+.pt .pn{background:var(--gcp-marker-color,#fca311);font-size:var(--gcp-label-size,11px)}
+.pt.sel{filter:hue-rotate(var(--gcp-marker-hue,0deg)) drop-shadow(0 0 5px var(--gcp-marker-color,#185abd))}
+#map-tools.tools-hidden{display:none!important}
+.ribbon-group button{display:inline-flex;align-items:center;gap:5px}
+.ribbon-group button .tool-icon{font-size:17px;line-height:1}
+.ribbon-tab{font-weight:600}
+.ribbon-panel{min-height:76px}
+.wh{font-size:13px;letter-spacing:.1px}
+@media(max-width:620px){.settings-grid{grid-template-columns:1fr}#landing .brand-row{flex-direction:column}#landing .brand-row>div{text-align:center}#landing .lico{width:108px;height:108px}}
 /* Modern Office-like workflow ribbon; landing page styling remains separate. */
 #office-ribbon{display:none;flex:0 0 auto;background:#fff;border-bottom:1px solid #d8e0ec;box-shadow:0 2px 5px #0b1e3a08;z-index:15;color:#172033}
 .ribbon-tabs{display:flex;gap:2px;padding:3px 12px 0;border-bottom:1px solid #e7ecf4;overflow-x:auto}
@@ -191,7 +223,8 @@ header button#go{background:var(--office-blue)!important;border-color:var(--offi
   <optgroup label="Mapbox (token)"><option value="mbs">Mapbox Satellite</option><option value="mbss">Mapbox Satellite Streets</option><option value="mbr">Mapbox Rues</option><option value="mbo">Mapbox Outdoors</option></optgroup>
   <optgroup label="Google (clé API)"><option value="gr">Google Plan</option><option value="gs">Google Satellite</option></optgroup>
  </select>
- <button id="b-theme" title="Passer en mode clair">☀</button><button id="cfg" title="Tokens et clés API">⚿ Clés</button><button id="b-options" title="Options de performance">⚙ Options</button><button id="b-diag">🔧 Diagnostic</button>
+ <button type="button" id="b-theme" title="Passer en mode clair" aria-label="Changer le thème">☀</button><button id="cfg" title="Tokens et clés API">⚿ Clés</button><button id="b-options" title="Options de performance">⚙ Ressources</button><button id="b-general-settings" title="Paramètres généraux">⚙ Paramètres</button>
+ <details class="app-menu"><summary>ⓘ Aide</summary><div class="menu-pop"><button type="button" id="help-open">❔ Aide & raccourcis</button><button type="button" id="about-open">ⓘ À propos</button><button type="button" id="license-open">▤ Licence</button><a href="https://github.com/Mayssa1000/Wcn" target="_blank" rel="noopener">↗ GitHub / versions</a><a href="https://github.com/Mayssa1000/Wcn/wiki" target="_blank" rel="noopener">📚 Wiki</a><small style="padding:6px">Version : build 2026.10.29</small></div></details><button id="b-diag">🔧 Diagnostic</button>
  <button id="undo" title="Ctrl+Z">↶ Annuler</button><button id="redo" title="Ctrl+Y">↷ Rétablir</button>
  <button id="go" disabled>Géoréférencer</button>
 </header>
@@ -205,15 +238,15 @@ header button#go{background:var(--office-blue)!important;border-color:var(--offi
   <button class="ribbon-tab" data-ribbon="export" role="tab" aria-selected="false">Export</button>
  </div>
  <div class="ribbon-panel" id="ribbon-panel-home">
-  <div class="ribbon-group"><button data-action="open">＋ Ouvrir image</button><button data-action="project">📂 Projet</button><button data-action="save">💾 Enregistrer</button><span class="ribbon-group-label">Fichier</span></div>
+  <div class="ribbon-group"><button data-action="open">🖼 Ouvrir image</button><button data-action="project">📂 Ouvrir projet</button><button data-action="save">💾 Enregistrer</button><span class="ribbon-group-label">Fichier</span></div>
   <div class="ribbon-group"><button data-action="merge">🧩 Fusionner images</button><button data-action="undo">↶ Annuler</button><button data-action="redo">↷ Rétablir</button><span class="ribbon-group-label">Actions</span></div>
-  <div class="ribbon-group"><button data-action="points">Points</button><button data-action="layers">Calques</button><button data-action="location">Localisation</button><span class="ribbon-group-label">Organisation</span></div>
+  <div class="ribbon-group"><button data-action="points">🎯 Points de contrôle</button><button data-action="layers">🗂️ Calques</button><button data-action="location">📍 Localisation</button><span class="ribbon-group-label">Organisation</span></div>
  </div>
- <div class="ribbon-panel" id="ribbon-panel-image" hidden><div class="ribbon-group"><button data-action="open">＋ Importer image</button><button data-action="merge">🧩 Fusionner images</button><button data-action="image-tab">Outils image</button><span class="ribbon-group-label">Images</span></div></div>
- <div class="ribbon-panel" id="ribbon-panel-geo" hidden><div class="ribbon-group"><button data-action="affine">Affine (3+ points)</button><button data-action="points">Points de contrôle</button><button data-action="georef">Géoréférencer</button><span class="ribbon-group-label">Référencement</span></div></div>
- <div class="ribbon-panel" id="ribbon-panel-map" hidden><div class="ribbon-group"><button data-action="globe">🌐 Vue globe</button><button data-action="maptools">Outils de mesure</button><button data-action="basemap">Fonds de carte</button><span class="ribbon-group-label">Carte</span></div></div>
- <div class="ribbon-panel" id="ribbon-panel-view" hidden><div class="ribbon-group"><button data-action="img-full">Image</button><button data-action="map-full">Carte</button><button data-action="theme">☀ Thème</button><span class="ribbon-group-label">Disposition</span></div></div>
- <div class="ribbon-panel" id="ribbon-panel-export" hidden><div class="ribbon-group"><button data-action="export-tab">Tuiles &amp; export</button><button data-action="save">💾 Enregistrer projet</button><span class="ribbon-group-label">Sortie</span></div></div>
+ <div class="ribbon-panel" id="ribbon-panel-image" hidden><div class="ribbon-group"><button data-action="open">＋ Importer image</button><button data-action="merge">🧩 Fusionner images</button><button data-action="image-tab">🖌️ Outils image</button><span class="ribbon-group-label">Images</span></div></div>
+ <div class="ribbon-panel" id="ribbon-panel-geo" hidden><div class="ribbon-group"><button data-action="affine">🎯 Affine (3+ points)</button><button data-action="points">Points de contrôle</button><button data-action="georef">🌐 Géoréférencer</button><span class="ribbon-group-label">Référencement</span></div></div>
+ <div class="ribbon-panel" id="ribbon-panel-map" hidden><div class="ribbon-group"><button data-action="globe">🌐 Vue globe</button><button data-action="maptools">📐 Outils de mesure</button><button data-action="toggle-maptools">👁 Afficher / masquer outils</button><button data-action="basemap">🗺️ Fonds de carte</button><span class="ribbon-group-label">Carte</span></div></div>
+ <div class="ribbon-panel" id="ribbon-panel-view" hidden><div class="ribbon-group"><button data-action="img-full">⛶ Image</button><button data-action="map-full">⛶ Carte</button><button data-action="pan-full">⛶ Outils</button><button data-action="theme">☀ Thème</button><button data-action="settings">⚙ Paramètres</button><span class="ribbon-group-label">Disposition</span></div></div>
+ <div class="ribbon-panel" id="ribbon-panel-export" hidden><div class="ribbon-group"><button data-action="export-tab">📦 Tuiles &amp; export</button><button data-action="save">💾 Enregistrer projet</button><span class="ribbon-group-label">Sortie</span></div></div>
 </nav>
 <div id="ws">
  <div id="landing"><div class="lw"><div class="brand-row"><img class="lico" src="/icon.png" alt="Logo KalipheTiles"><div><h1>KalipheTiles</h1><p class="tagline">Studio cartographique · Géoréférencement & imagerie</p><div id="user-greeting" class="user-greeting"></div></div></div>
@@ -225,9 +258,9 @@ header button#go{background:var(--office-blue)!important;border-color:var(--offi
   <small style="display:block;margin-top:12px">Vous pouvez aussi glisser-déposer une image ou un projet .ktproj dans la fenêtre.</small>
   <ol><li>Chargez une image et ajoutez au moins trois points de contrôle.</li><li>Associez les points de l’image à leurs positions sur la carte.</li><li>Vérifiez l’aperçu, puis exportez le résultat.</li></ol></div></div>
  <div id="dock-v" role="separator" aria-label="Redimensionner les panneaux gauche et carte" tabindex="0"></div><div id="dock-h" role="separator" aria-label="Redimensionner image et outils" tabindex="0"></div>
- <div class="win" id="w-img" style="left:6px;top:6px;width:46%;height:56%"><div class="wh"><span>🖼 Image à géoréférencer</span><span class="wbtn"><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
+ <div class="win" id="w-img" style="left:6px;top:6px;width:46%;height:56%"><div class="wh"><span>🖼 Image à géoréférencer</span><span class="wbtn"><span class="window-history"><button type="button" id="img-window-undo" title="Annuler les points (Ctrl+Z)">↶</button><button type="button" id="img-window-redo" title="Rétablir les points (Ctrl+Y)">↷</button></span><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
   <div class="wb"><div id="itabs"></div><div class="image-commandbar" style="display:flex;gap:6px;align-items:center;padding:5px;background:#eef3fb;border-bottom:1px solid #d7deea;flex-wrap:wrap"><label style="font-size:12px">Méthode <select id="method-img"><option value="affine">Affine (3+ points)</option><option value="poly2">Polynôme 2 (6+ points)</option><option value="tps">Thin plate spline (4+ points)</option></select></label><button type="button" id="img-undo" title="Annuler les points de contrôle (Ctrl+Z dans la fenêtre Image)">↶ Annuler</button><button type="button" id="img-redo" title="Rétablir les points de contrôle (Ctrl+Y dans la fenêtre Image)">↷ Rétablir</button><button type="button" id="img-merge" title="Fusionner les images importées">🧩 Fusionner images</button></div><div id="iv"><div id="ib"></div><div class="zb"><button id="zi" title="Zoom +">+</button><button id="zo" title="Zoom −">−</button><button id="zf" title="Ajuster">⤢</button></div></div></div></div>
- <div class="win" id="w-map" style="left:48%;top:6px;width:51%;height:96%"><div class="wh"><span>🗺 Carte</span><span class="wbtn"><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
+ <div class="win" id="w-map" style="left:48%;top:6px;width:51%;height:96%"><div class="wh"><span>🗺 Carte</span><span class="wbtn"><span class="window-history"><button type="button" id="map-window-undo" title="Annuler mesure/dessin (Ctrl+Z)">↶</button><button type="button" id="map-window-redo" title="Rétablir mesure/dessin (Ctrl+Y)">↷</button><button type="button" id="map-tools-toggle" title="Afficher / masquer les outils de dessin et mesure">▤ Outils</button></span><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
   <div class="wb"><div id="mapwrap">
 
 <div id="map"></div><div id="context-menu" role="menu" style="display:none;position:absolute;z-index:10000;background:#fff;color:#172033;border:1px solid #cbd5e1;border-radius:8px;box-shadow:0 8px 24px #0003;padding:5px;min-width:150px"><button type="button" data-action="delete" style="display:block;width:100%;text-align:left">Supprimer</button><button type="button" data-action="fix" style="display:block;width:100%;text-align:left">Rendre fixe</button></div><div class="map-tools" id="map-tools" aria-label="Outils de mesure et repères"><b>Outils carte</b><button type="button" id="measure-line" title="Mesurer une ligne">↗ Ligne</button><button type="button" id="measure-path" title="Mesurer une polyligne (double-clic pour terminer)">〰 Polyligne</button><button type="button" id="measure-area" title="Mesurer une surface (double-clic pour terminer)">⬠ Surface</button><button type="button" id="measure-finish" title="Terminer la mesure">✓ Terminer</button><button type="button" id="measure-clear" title="Effacer les mesures et dessins">Effacer</button><button type="button" id="measure-undo" title="Annuler mesure/dessin (Ctrl+Z)">↶</button><button type="button" id="measure-redo" title="Rétablir mesure/dessin (Ctrl+Y)">↷</button><label>Couleur <input id="draw-color" type="color" value="#ff8c00" aria-label="Couleur des lignes" style="width:32px;padding:1px"></label><label>Épaisseur <input id="draw-width" type="number" min="1" max="12" value="3" aria-label="Épaisseur des lignes" style="width:48px"></label><label title="Espacement des carrés de la grille">Pas <input id="grid-spacing" type="number" min="1" step="1" value="100" aria-label="Espacement de la grille en mètres"> m</label><button type="button" id="grid-polygon" title="Dessiner le polygone qui délimite la grille">⬠ Polygone grille</button><button type="button" id="grid-toggle" title="Afficher une grille uniquement dans le polygone dessiné">▦ Grille polygone</button><button type="button" id="ref-line" title="Dessiner une ligne de repère">⌁ Repère</button><span id="map-tool-status" class="tool-status">Prêt</span></div>
@@ -251,7 +284,7 @@ header button#go{background:var(--office-blue)!important;border-color:var(--offi
     <label><input type="checkbox" id="snap"> Aimanter</label><label id="gstep"></label></div>
   </div>
   </div></div></div>
- <div class="win" id="w-pan" style="left:6px;top:58%;width:46%;height:40%"><div class="wh"><span>🧰 Outils</span><span class="wbtn"><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
+ <div class="win" id="w-pan" style="left:6px;top:58%;width:46%;height:40%"><div class="wh"><span>🧰 Outils</span><span class="wbtn"><span class="window-history"><button type="button" id="tools-window-undo" title="Annuler les points (Ctrl+Z)">↶</button><button type="button" id="tools-window-redo" title="Rétablir les points (Ctrl+Y)">↷</button></span><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
   <div class="wb col">
    <div class="tabs"><button class="on" data-t="proj">Projet</button><button data-t="img">Image</button><button data-t="pts">Points</button><button data-t="lay">Calques</button><button data-t="loc">Localisation</button><button data-t="ter">Terrain</button><button data-t="cloud">Cloud</button><button data-t="exp">Tuiles &amp; export</button></div>
    <div class="tab" id="t-pts"><div id="list"></div></div>
@@ -355,6 +388,23 @@ header button#go{background:var(--office-blue)!important;border-color:var(--offi
  <small>Le budget RAM est un réglage indicatif : il ne constitue pas une limite système stricte. Les traitements qui ne prennent pas en charge ces réglages peuvent ne pas en tenir compte.</small>
  <div class="row" style="justify-content:flex-end;margin-top:14px"><button id="res-cancel">Annuler</button><button id="res-save" style="background:#fca311">Enregistrer</button></div>
 </dialog>
+<dialog id="general-settings">
+ <h2 style="margin:0 0 5px">Paramètres généraux</h2><p style="margin:0 0 18px;color:#64748b">Personnalisez les points de contrôle et la précision d’affichage.</p>
+ <div class="settings-grid">
+  <label for="gcp-size">Taille des marqueurs (px)<input id="gcp-size" type="range" min="20" max="80" value="46"><output id="gcp-size-value">46 px</output></label>
+  <label for="gcp-color">Couleur des marqueurs<input id="gcp-color" type="color" value="#185abd"></label>
+  <label for="gcp-opacity">Opacité des marqueurs<input id="gcp-opacity" type="range" min="30" max="100" value="100"><output id="gcp-opacity-value">100 %</output></label>
+  <label for="gcp-label-size">Taille du numéro (px)<input id="gcp-label-size" type="range" min="9" max="18" value="11"><output id="gcp-label-size-value">11 px</output></label>
+  <label for="coord-precision">Précision des coordonnées<select id="coord-precision"><option value="3">3 décimales</option><option value="4">4 décimales</option><option value="5">5 décimales</option><option value="6" selected>6 décimales</option><option value="7">7 décimales</option><option value="8">8 décimales</option></select></label>
+  <label for="default-draw-color">Couleur par défaut des dessins<input id="default-draw-color" type="color" value="#ff8c00"></label>
+  <label for="default-draw-width">Épaisseur par défaut (px)<input id="default-draw-width" type="number" min="1" max="12" value="3"></label>
+ </div>
+ <p style="font-size:12px;color:#64748b">Ces réglages concernent l’affichage et les valeurs par défaut ; ils ne modifient pas les coordonnées géographiques enregistrées.</p>
+ <div class="row" style="justify-content:flex-end;margin-top:16px"><button type="button" id="settings-reset">Réinitialiser</button><button type="button" id="settings-close">Fermer</button><button type="button" id="settings-save" style="background:#185abd;color:#fff">Enregistrer</button></div>
+</dialog>
+<dialog id="help-dialog" style="width:min(560px,94vw);border:1px solid #cbd5e1;border-radius:14px;padding:22px"><h2>Aide & raccourcis</h2><p><b>Ctrl+Z</b> annule et <b>Ctrl+Y</b> rétablit dans la fenêtre active. Image/Outils : historique des points de contrôle. Carte : historique des mesures et dessins.</p><p>Utilisez les séparateurs entre les panneaux pour ajuster leur taille. Les boutons ↶ et ↷ dans chaque fenêtre donnent accès au même historique local.</p><p>Pour un géoréférencement affine, utilisez au moins 3 points bien répartis, idéalement près des bords et des coins de l’image.</p><div class="row" style="justify-content:flex-end"><button type="button" data-close-dialog="help-dialog">Fermer</button></div></dialog>
+<dialog id="about-dialog" style="width:min(560px,94vw);border:1px solid #cbd5e1;border-radius:14px;padding:22px"><h2>À propos de KalipheTiles</h2><p>Studio cartographique de géoréférencement, organisation de calques, traitement d’images et export géospatial.</p><p><b>Build :</b> 2026.10.29</p><p><b>Code source :</b> <a href="https://github.com/Mayssa1000/Wcn" target="_blank" rel="noopener">GitHub — Wcn</a></p><div class="row" style="justify-content:flex-end"><button type="button" data-close-dialog="about-dialog">Fermer</button></div></dialog>
+<dialog id="license-dialog" style="width:min(560px,94vw);border:1px solid #cbd5e1;border-radius:14px;padding:22px"><h2>Licence</h2><p>Aucun fichier de licence n’a été détecté dans cette archive. La licence exacte du projet ne peut donc pas être confirmée ici. Consultez le dépôt source et son fichier LICENSE avant de redistribuer ou modifier le logiciel.</p><p><a href="https://github.com/Mayssa1000/Wcn" target="_blank" rel="noopener">Consulter le dépôt</a></p><div class="row" style="justify-content:flex-end"><button type="button" data-close-dialog="license-dialog">Fermer</button></div></dialog>
 <script>
 const $=s=>document.querySelector(s), st=t=>$("#status").innerHTML=t;
 if(typeof maplibregl==="undefined"||typeof proj4==="undefined"){document.body.insertAdjacentHTML("afterbegin","<div style='padding:20px;background:#fee;font:15px sans-serif'>⚠️ Bibliothèque de carte introuvable (dossier <b>static/vendor</b> absent et internet indisponible). Voir README.</div>");throw new Error("bibliothèques manquantes")}
@@ -645,7 +695,7 @@ function redraw(){
  });
  if(pend.img){const e=badge(gcps.length+1,"ip wait");place(e,pend.img);ib.appendChild(e)}
  if(pend.geo)mm.push(new maplibregl.Marker({element:badge(gcps.length+1,"wait")}).setLngLat([pend.geo.lon,pend.geo.lat]).addTo(map));
- $("#list").innerHTML=gcps.map((g,i)=>`<div data-r="${i}" class="${i==sel?"sel":""}"><b>${i+1}</b><span>image ${g.px.toFixed(0)}, ${g.py.toFixed(0)} → lat ${g.lat.toFixed(6)}, lon ${g.lon.toFixed(6)}</span><a href="#" data-i="${i}">✕</a></div>`).join("")||"<div>Aucun point</div>";
+ $("#list").innerHTML=gcps.map((g,i)=>`<div data-r="${i}" class="${i==sel?"sel":""}"><b>${i+1}</b><span>image ${g.px.toFixed(0)}, ${g.py.toFixed(0)} → lat ${g.lat.toFixed(readMarkerSettings().precision)}, lon ${g.lon.toFixed(readMarkerSettings().precision)}</span><a href="#" data-i="${i}">✕</a></div>`).join("")||"<div>Aucun point</div>";
  updGo();redrawHook();
  st(!id?"Chargez d'abord une image":pend.img?"Point image placé → donnez sa position sur la carte (clic ou coordonnées)":pend.geo?"Position carte placée → cliquez le point correspondant sur l'image":sel>=0?`Point ${sel+1} sélectionné · glisser = déplacer · Suppr (ou clic droit) = supprimer · Ctrl+Z / Ctrl+Y`:`${gcps.length} point(s) · cliquez un point sur l'image (ou une position sur la carte)`);
 }
@@ -756,7 +806,7 @@ document.addEventListener("keydown",e=>{
  const T=e.target,tag=(T.tagName||"").toLowerCase();
  if(tag=="textarea"||(tag=="input"&&["text","number"].includes(T.type)))return;
  const c=e.ctrlKey||e.metaKey,key=e.key.toLowerCase();
- const overMap=!!T.closest?.('#w-map')||!!document.querySelector('#w-map:hover');const overImage=!!T.closest?.('#w-img')||!!document.querySelector('#w-img:hover');
+ const overMap=!!T.closest?.('#w-map')||!!document.querySelector('#w-map:hover');const overImage=!!T.closest?.('#w-img')||!!document.querySelector('#w-img:hover');const overTools=!!T.closest?.('#w-pan')||!!document.querySelector('#w-pan:hover');
  if(c&&key=="z"&&!e.shiftKey){e.preventDefault();if(overMap)undoMeasure();else undo()}
  else if(c&&(key=="y"||(key=="z"&&e.shiftKey))){e.preventDefault();if(overMap)redoMeasure();else redo()}
  else if((e.key=="Delete"||e.key=="Backspace")&&sel>=0){e.preventDefault();del(sel)}
@@ -856,11 +906,26 @@ document.querySelectorAll('.ribbon-group button[data-action]').forEach(btn=>btn.
   case 'open':click('l-open');break;case 'project':click('b-opentop');break;case 'save':click('b-savetop');break;case 'merge':click('b-merge-images');break;
   case 'undo':click('undo');break;case 'redo':click('redo');break;case 'points':selectToolTab('pts');break;case 'layers':selectToolTab('lay');break;case 'location':selectToolTab('loc');break;
   case 'affine':document.getElementById('method').value='affine';document.getElementById('method').dispatchEvent(new Event('change',{bubbles:true}));break;
-  case 'georef':click('go');break;case 'globe':toggleGlobe();break;case 'maptools':document.getElementById('map-tools').style.display='';document.getElementById('map-tools').scrollIntoView({block:'nearest'});break;
-  case 'basemap':document.getElementById('base').focus();break;case 'theme':click('b-theme');break;case 'image-tab':selectToolTab('img');break;case 'export-tab':selectToolTab('exp');break;
-  case 'img-full':document.querySelector('#w-img .wf')?.click();break;case 'map-full':document.querySelector('#w-map .wf')?.click();break;
+  case 'georef':click('go');break;case 'globe':toggleGlobe();break;case 'maptools':document.getElementById('map-tools').classList.remove('tools-hidden');document.getElementById('map-tools').scrollIntoView({block:'nearest'});break;
+  case 'basemap':document.getElementById('base').focus();break;case 'toggle-maptools':click('map-tools-toggle');break;case 'settings':click('b-general-settings');break;case 'theme':click('b-theme');break;case 'image-tab':selectToolTab('img');break;case 'export-tab':selectToolTab('exp');break;
+  case 'img-full':document.querySelector('#w-img .wf')?.click();break;case 'map-full':document.querySelector('#w-map .wf')?.click();break;case 'pan-full':document.querySelector('#w-pan .wf')?.click();break;
  }
 }));
+
+// ---------- Paramètres généraux, aide et réglages de précision ----------
+const generalSettings=document.getElementById('general-settings');
+const markerSettingDefaults={size:46,color:'#185abd',opacity:100,label:11,precision:6,drawColor:'#ff8c00',drawWidth:3};
+function readMarkerSettings(){try{return {...markerSettingDefaults,...JSON.parse(localStorage.getItem('kt-ui-settings')||'{}')}}catch(_){return {...markerSettingDefaults}}}
+function applyMarkerSettings(o){document.documentElement.style.setProperty('--gcp-marker-size',`${o.size}px`);document.documentElement.style.setProperty('--gcp-marker-color',o.color);document.documentElement.style.setProperty('--gcp-marker-opacity',String(o.opacity/100));document.documentElement.style.setProperty('--gcp-label-size',`${o.label}px`);const n=parseInt(o.color.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255,max=Math.max(r,g,b)/255,min=Math.min(r,g,b)/255,d=max-min;let h=0;if(d){if(max===r/255)h=60*(((g-b)/255/d)%6);else if(max===g/255)h=60*((b-r)/255/d+2);else h=60*((r-g)/255/d+4)}h=(h+360)%360;document.documentElement.style.setProperty('--gcp-marker-hue',`${h-25}deg`);const dc=document.getElementById('draw-color'),dw=document.getElementById('draw-width');if(dc)dc.value=o.drawColor;if(dw)dw.value=o.drawWidth;}
+function loadSettingsForm(){const o=readMarkerSettings();document.getElementById('gcp-size').value=o.size;document.getElementById('gcp-size-value').textContent=o.size+' px';document.getElementById('gcp-color').value=o.color;document.getElementById('gcp-opacity').value=o.opacity;document.getElementById('gcp-opacity-value').textContent=o.opacity+' %';document.getElementById('gcp-label-size').value=o.label;document.getElementById('gcp-label-size-value').textContent=o.label+' px';document.getElementById('coord-precision').value=o.precision;document.getElementById('default-draw-color').value=o.drawColor;document.getElementById('default-draw-width').value=o.drawWidth;}
+function collectSettings(){return {size:+document.getElementById('gcp-size').value,color:document.getElementById('gcp-color').value,opacity:+document.getElementById('gcp-opacity').value,label:+document.getElementById('gcp-label-size').value,precision:+document.getElementById('coord-precision').value,drawColor:document.getElementById('default-draw-color').value,drawWidth:Math.max(1,Math.min(12,+document.getElementById('default-draw-width').value||3))}}
+function saveGeneralSettings(){const o=collectSettings();try{localStorage.setItem('kt-ui-settings',JSON.stringify(o))}catch(_){}applyMarkerSettings(o);generalSettings.close();if(typeof redraw==='function')redraw();}
+applyMarkerSettings(readMarkerSettings());
+document.getElementById('b-general-settings').onclick=()=>{loadSettingsForm();generalSettings.showModal()};document.getElementById('settings-close').onclick=()=>generalSettings.close();document.getElementById('settings-save').onclick=saveGeneralSettings;document.getElementById('settings-reset').onclick=()=>{try{localStorage.removeItem('kt-ui-settings')}catch(_){}loadSettingsForm();applyMarkerSettings(markerSettingDefaults)};
+for(const [id,out,suffix] of [['gcp-size','gcp-size-value',' px'],['gcp-opacity','gcp-opacity-value',' %'],['gcp-label-size','gcp-label-size-value',' px']])document.getElementById(id).addEventListener('input',e=>document.getElementById(out).textContent=e.target.value+suffix);
+for(const [id,did] of [['help-open','help-dialog'],['about-open','about-dialog'],['license-open','license-dialog']])document.getElementById(id).onclick=()=>document.getElementById(did).showModal();document.querySelectorAll('[data-close-dialog]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.closeDialog).close());
+document.getElementById('map-tools-toggle').onclick=()=>{const el=document.getElementById('map-tools');el.classList.toggle('tools-hidden');document.getElementById('map-tools-toggle').setAttribute('aria-pressed',String(!el.classList.contains('tools-hidden')))};
+document.getElementById('img-window-undo').onclick=()=>undo();document.getElementById('img-window-redo').onclick=()=>redo();document.getElementById('tools-window-undo').onclick=()=>undo();document.getElementById('tools-window-redo').onclick=()=>redo();document.getElementById('map-window-undo').onclick=()=>undoMeasure();document.getElementById('map-window-redo').onclick=()=>redoMeasure();
 
 // ---------- Panneaux dockés et séparateurs redimensionnables ----------
 let Zi=10;
@@ -1224,7 +1289,14 @@ $("#b-contrast").onclick=()=>edit({op:"contrast"});
 
 // ---------- Thème clair / sombre ----------
 function setTheme(dark){document.getElementById("darkcss").disabled=!dark;$("#b-theme").textContent=dark?"☀":"🌙";$("#b-theme").title=dark?"Passer en mode clair":"Passer en mode sombre";cfg.theme=dark?"dark":"light"}
-$("#b-theme").onclick=()=>{setTheme(document.getElementById("darkcss").disabled);fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)})};
+$("#b-theme").onclick=(e)=>{
+  // Le bouton de thème ne doit jamais déclencher une action de fenêtre ou de ruban.
+  e.preventDefault(); e.stopPropagation();
+  const darkStyle=document.getElementById("darkcss");
+  const nextDark=darkStyle.disabled;
+  setTheme(nextDark);
+  fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)}).catch(()=>{});
+};
 
 // ---------- Choix de l'emplacement : projet et exports ----------
 async function pickSave(name){
