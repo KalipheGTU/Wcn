@@ -105,6 +105,46 @@ def build_layers(reqs):
         except Exception as e: raise HTTPException(400, f"« {l.name or l.id} » : calcul impossible ({e})")
     return out
 
+
+@app.post("/api/merge-images")
+def merge_images(req: dict):
+    ids = req.get("ids") or []
+    if len(ids) < 2:
+        raise HTTPException(400, "Sélectionnez au moins deux images.")
+    if len(ids) > 30:
+        raise HTTPException(400, "Maximum 30 images par fusion.")
+    images = []
+    try:
+        for mid in ids:
+            d = mdir(str(mid))
+            p = imageops.src_path(d)
+            im = Image.open(p).convert("RGBA")
+            images.append(im.copy())
+        # Assemblage sans géoréférencement : conservation de la résolution native.
+        height = max(im.height for im in images)
+        width = sum(im.width for im in images)
+        if width * height > 180_000_000:
+            raise HTTPException(413, "Image finale trop grande. Fusionnez moins d'images à la fois.")
+        canvas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+        x = 0
+        for im in images:
+            canvas.alpha_composite(im, (x, 0))
+            x += im.width
+        outdir = DATA / "exports"; outdir.mkdir(parents=True, exist_ok=True)
+        stamp = __import__("datetime").datetime.now().strftime("%Y%m%d-%H%M%S")
+        name = f"KalipheTiles_fusion_{stamp}.png"
+        canvas.save(outdir / name, format="PNG")
+        return {"name": name, "url": f"/data/exports/{name}", "width": width, "height": height,
+                "note": "Assemblage horizontal à résolution native ; géoréférencement non conservé."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(400, f"Fusion impossible : {e}")
+    finally:
+        for im in images:
+            try: im.close()
+            except Exception: pass
+
 @app.post("/api/maps")
 async def upload(file: UploadFile = File(...)):
     mid = new_id(); d = DATA / mid; d.mkdir()
