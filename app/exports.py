@@ -1,14 +1,14 @@
-import datetime, hashlib, hmac, io, json, mimetypes, os, sqlite3, urllib.parse, urllib.request, zipfile
+import shutil, datetime, hashlib, hmac, io, json, mimetypes, os, sqlite3, urllib.parse, urllib.request, zipfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import numpy as np
 from PIL import Image, TiffImagePlugin
-from . import georef
+from . import georef, opentopo, heightmap, imageops
 
 WKT4326 = 'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]'
 WKT3857 = 'PROJCS["WGS 84 / Pseudo-Mercator",' + WKT4326 + ',PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1]]'
 WKT = {"4326": WKT4326, "3857": WKT3857}
-KINDS = ["geotiff", "png_wld", "jpg_wld", "tif_wld", "kmz", "geojson", "shp", "gpkg"]
+KINDS = ["geotiff", "png_wld", "jpg_wld", "tif_wld", "kmz", "geojson", "shp", "gpkg", "dem_tif", "opentopo", "heightmap", "limits_json", "img_original", "img_edited", "img_color", "mbtiles"]
 
 def write_geotiff(path, arr, x0, y0, res, crs):
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
@@ -18,6 +18,16 @@ def write_geotiff(path, arr, x0, y0, res, crs):
     ifd.tagtype[34735] = 3
     ifd[34735] = (1, 1, 0, 3, 1024, 0, 1, 1 if proj else 2, 1025, 0, 1, 1, 3072 if proj else 2048, 0, 1, int(crs))
     Image.fromarray(arr, "RGBA").save(path, "TIFF", tiffinfo=ifd, compression="tiff_deflate")
+
+def write_dem_geotiff(path, arr, x0, y0, res, crs):
+    """GeoTIFF float32 mono-bande : vraies valeurs d'altitude, nodata -9999."""
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd.tagtype[33550] = 12; ifd[33550] = (res, res, 0.0)
+    ifd.tagtype[33922] = 12; ifd[33922] = (0.0, 0.0, 0.0, x0, y0, 0.0)
+    proj = crs == "3857"; ifd.tagtype[34735] = 3
+    ifd[34735] = (1, 1, 0, 3, 1024, 0, 1, 1 if proj else 2, 1025, 0, 1, 1, 3072 if proj else 2048, 0, 1, int(crs))
+    ifd.tagtype[42113] = 2; ifd[42113] = "-9999"
+    Image.fromarray(np.where(np.isfinite(arr), arr, -9999.0).astype(np.float32), "F").save(path, "TIFF", tiffinfo=ifd, compression="tiff_deflate")
 
 def write_wld(path, x0, y0, res):
     Path(path).write_text(f"{res}\n0\n0\n{-res}\n{x0 + res / 2}\n{y0 - res / 2}\n")
@@ -41,9 +51,22 @@ def write_geojson(path, name, layers, zmin=None, zmax=None):
         for l in layers for i, g in enumerate(l.gcps)]}
     Path(str(path).replace("_footprint.geojson", "_gcps.geojson")).write_text(json.dumps(pts))
 
+def write_limits(path, name, layers, ext=None):
+    """JSON des limites : contour et rectangle de chaque image + emprise utilisée pour le MNT."""
+    rings = heightmap.rings_of(layers); allp = [p for _, r in rings for p in r]
+    xs, ys = [p[0] for p in allp], [p[1] for p in allp]
+    doc = {"projet": name, "crs": "EPSG:4326",
+           "ensemble_des_images": {"bbox_ouest_sud_est_nord": [min(xs), min(ys), max(xs), max(ys)]},
+           "images": [{"nom": l.name, "largeur_px": l.w, "hauteur_px": l.h, "methode": l.method,
+                       "contour": r, "bbox_ouest_sud_est_nord": [min(p[0] for p in r), min(p[1] for p in r), max(p[0] for p in r), max(p[1] for p in r)],
+                       "points_de_reference": l.gcps} for l, (_, r) in zip(layers, rings)]}
+    if ext: doc["emprise_mnt"] = ext
+    Path(path).write_text(json.dumps(doc, indent=1))
+
 def write_frame(out_dir, name, layers, zmin, zmax):
     out_dir = Path(out_dir); out_dir.mkdir(exist_ok=True)
     write_geojson(out_dir / f"{name}_footprint.geojson", name, layers, zmin, zmax)
+    write_limits(out_dir / f"{name}_limites.json", name, layers)
 
 def write_shp(base, name, layers):
     import shapefile
@@ -86,9 +109,36 @@ def write_gpkg(path, tiles_dir, name, bounds_m, zmin, zmax, ts=256):
                     db.execute("INSERT INTO tiles(zoom_level,tile_column,tile_row,tile_data) VALUES (?,?,?,?)", (int(z), int(x), int(f[:-4]), fh.read()))
     db.commit(); db.close()
 
-def export_all(d, name, layers, kinds, crs, max_px, meta):
-    """Exporte le COLLAGE de tous les calques en un seul fichier par format."""
-    out = d / "exports"; out.mkdir(exist_ok=True); files = []
+def export_all(d, name, layers, kinds, crs, max_px, meta, opts=None):
+    """Exporte le COLLAGE de tous les calques en un seul fichier par format (dans opts['dest'] si fourni)."""
+    opts = opts or {}; out = Path(opts["dest"]) if opts.get("dest") else d / "exports"; out.mkdir(parents=True, exist_ok=True); files = []
+    ext = None
+    if "limits_json" in kinds or "heightmap" in kinds:
+        hm = opts.get("hm") or {}
+        b = heightmap.bbox_from_layers(layers, hm.get("mode", "footprint"), hm.get("margin", 0), hm.get("bbox"))
+        ext = {"mode": hm.get("mode", "footprint"), "marge_deg": hm.get("margin", 0), "bbox_ouest_sud_est_nord": list(b)}
+    if "limits_json" in kinds:
+        write_limits(out / f"{name}_limites.json", name, layers, ext); files.append(f"{name}_limites.json")
+    for l in layers:
+        tag = "".join(c if c.isalnum() or c in "-_" else "_" for c in (l.name or "image"))
+        f = getattr(l, "folder", None)
+        if not f: continue
+        if "img_original" in kinds:
+            o = f / "orig.jpg" if (f / "orig.jpg").exists() else f / "orig.png"
+            if o.exists(): shutil.copyfile(o, out / f"{name}_{tag}_originale{o.suffix}"); files.append(f"{name}_{tag}_originale{o.suffix}")
+        if "img_edited" in kinds or "img_color" in kinds:
+            src = imageops.src_path(f)
+            if "img_edited" in kinds: shutil.copyfile(src, out / f"{name}_{tag}_modifiee{src.suffix}"); files.append(f"{name}_{tag}_modifiee{src.suffix}")
+            if "img_color" in kinds:
+                im = imageops.open_loaded(src)
+                if l.adj is not None: im = imageops.apply_adj(im, {"scale": l.adj[0].tolist(), "offset": l.adj[1].tolist()})
+                im.save(out / f"{name}_{tag}_couleurs.png"); files.append(f"{name}_{tag}_couleurs.png")
+    if "mbtiles" in kinds:
+        if not (d / "carte.mbtiles").exists(): raise ValueError("MBTiles : générez d'abord les tuiles (bouton Géoréférencer)")
+        shutil.copyfile(d / "carte.mbtiles", out / f"{name}.mbtiles"); files.append(f"{name}.mbtiles")
+    if "heightmap" in kinds:
+        hm = dict(opts.get("hm") or {}); hm["demtype"] = opts.get("demtype", hm.get("demtype", "COP30"))
+        files += heightmap.build(layers, opts.get("opentopo_key", ""), out, name, hm)
     if "geojson" in kinds:
         write_geojson(out / f"{name}_footprint.geojson", name, layers, meta.get("zmin"), meta.get("zmax"))
         files += [f"{name}_footprint.geojson", f"{name}_gcps.geojson"]
@@ -115,6 +165,15 @@ def export_all(d, name, layers, kinds, crs, max_px, meta):
         if not (d / "tiles").exists(): raise ValueError("GeoPackage : générez d'abord les tuiles (bouton Géoréférencer)")
         b, _ = georef.union([(l.b, l.mpp) for l in layers])
         write_gpkg(out / f"{name}.gpkg", d / "tiles", name, b, meta["zmin"], meta["zmax"], meta.get("ts", 256)); files.append(f"{name}.gpkg")
+    if "dem_tif" in kinds:
+        a, x0, y0, r = georef.render_dem(layers, crs, max_px)
+        write_dem_geotiff(out / f"{name}_altitudes_{crs}.tif", a, x0, y0, r, crs); files.append(f"{name}_altitudes_{crs}.tif")
+    if "opentopo" in kinds:                                   # même emprise que l'image (ou l'ensemble des images)
+        b, _ = georef.union([(l.b, l.mpp) for l in layers])
+        w, so = georef.m2ll(b[0], b[1]); e, no = georef.m2ll(b[2], b[3]); mg = float(opts.get("margin", 0))
+        dem = opts.get("demtype", "COP30")
+        opentopo.fetch_dem((w - mg, so - mg, e + mg, no + mg), dem, opts.get("opentopo_key", ""), out / f"{name}_opentopo_{dem}.tif")
+        files.append(f"{name}_opentopo_{dem}.tif")
     return files
 
 # ---------- Envoi S3 (AWS S3, Cloudflare R2, Scaleway, MinIO…) : signature SigV4 ----------

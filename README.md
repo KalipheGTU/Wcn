@@ -5,3 +5,10 @@ aperçu en direct, relief 3D, heightmap OpenTopography, tuiles XYZ / MBTiles / G
 Dossier de travail : Documents\KalipheTiles — journal : kaliphetiles.log — bouton « 🔧 Diagnostic ».
 Icône : static/icon.png (le workflow en fait l'icône de l'exe) — marqueurs : static/loupe.png — accueil : static/world.png.
 Raccourcis : Ctrl+Z / Ctrl+Y, Suppr, Échap, Ctrl+S (enregistrer), Ctrl+Maj+S (enregistrer sous).
+
+
+## Import vectoriel, DXF et PMTiles (ajouts)
+- L'en-tête propose l'import GeoJSON, KML, Shapefile compressé en ZIP et DXF, avec affichage des entités sur la carte.
+- Le bouton DXF exporte le dernier jeu de vecteurs importé. Le module `ezdxf` est inclus dans les dépendances.
+- Le bouton PMTiles convertit le fichier MBTiles produit par le géoréférencement. Le binaire officiel `pmtiles` doit être installé et accessible dans le PATH de la machine.
+- Les fichiers DWG, SKP, RVT et 3DM ne sont pas convertis nativement par cette version. Pour les échanger, utiliser un convertisseur spécialisé ou exporter depuis le logiciel d'origine vers DXF (2D), IFC (BIM) ou un format maillé tel que OBJ/glTF (3D). La conversion intermédiaire peut perdre des données.

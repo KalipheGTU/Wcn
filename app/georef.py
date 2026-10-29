@@ -70,9 +70,10 @@ def prep(w, h, gcps, method):
 
 class Layer:
     """Une image calée (chargée à la demande)."""
-    def __init__(self, path, gcps, method, name=""):
-        im = Image.open(path)
+    def __init__(self, path, gcps, method, name="", raw_path=None, adj=None):
+        im = Image.open(path); im.load()                      # fichier refermé immédiatement (Windows)
         self.im = im if im.mode in ("RGB", "RGBA") else im.convert("RGB")
+        self.raw_path = raw_path; self.adj = adj             # adj = (échelle[3], décalage[3]) : synchronisation des couleurs
         self.w, self.h = self.im.size; self.name = name; self.gcps = gcps; self.method = method
         self.fwd, self.inv, self.b, self.mpp = prep(self.w, self.h, gcps, method)
 
@@ -117,6 +118,12 @@ def to_rgba(c, ok):
     a = c[:, 3] if c.shape[1] == 4 else np.full(len(c), 255.0)
     return np.concatenate([c[:, :3], np.where(ok, a, 0)[:, None]], axis=1).astype(np.uint8)
 
+def sample(l, arr, k, U, V):
+    c, ok = bilinear(arr, np.stack([U.ravel() / k, V.ravel() / k], 1))
+    if l.adj is not None:
+        c = c.copy(); c[:, :3] = np.clip(c[:, :3] * l.adj[0] + l.adj[1], 0, 255)
+    return c, ok
+
 def composite(parts):
     """parts : liste de tableaux (n,4) uint8, du dessous vers le dessus."""
     if len(parts) == 1: return parts[0]
@@ -160,7 +167,7 @@ def make_tiles(layers, out_dir, progress=lambda f: None, zmin=None, zmax=None, t
                 if l.b[2] < ox or l.b[0] > ox + size or l.b[3] < oy - size or l.b[1] > oy: continue
                 xs = ox + (np.arange(K) * step + .5) * res; ys = oy - (np.arange(K) * step + .5) * res
                 U, V = uv_grid(l.inv, xs, ys, ts, ts, step)
-                c, ok = bilinear(arr, np.stack([U.ravel() / k, V.ravel() / k], 1))
+                c, ok = sample(l, arr, k, U, V)
                 if ok.any(): parts.append(to_rgba(c, ok))
             if parts:
                 d = os.path.join(out_dir, str(z), str(tx)); os.makedirs(d, exist_ok=True)
@@ -174,39 +181,89 @@ def make_tiles(layers, out_dir, progress=lambda f: None, zmin=None, zmax=None, t
     west, south = m2ll(b[0], b[1]); east, north = m2ll(b[2], b[3])
     return [west, south, east, north], zmin, zmax
 
-def render_raster(layers, crs="3857", max_px=8000):
-    """Raster nord en haut (collage des calques). crs '3857' ou '4326'. max_px<=0 : résolution native.
-    Retourne (RGBA, x0, y0, résolution)."""
+def plan_grid(layers, crs, max_px):
     b, mpp = union([(l.b, l.mpp) for l in layers])
     if crs == "4326":
         west, south = m2ll(b[0], b[1]); east, north = m2ll(b[2], b[3]); span = max(east - west, north - south)
         res = mpp / 111320 if max_px <= 0 else max(mpp / 111320, span / max_px)
-        x0, y0, W, H = west, north, math.ceil((east - west) / res), math.ceil((north - south) / res)
+        g = (west, north, res, math.ceil((east - west) / res), math.ceil((north - south) / res))
     else:
         span = max(b[2] - b[0], b[3] - b[1])
         res = mpp if max_px <= 0 else max(mpp, span / max_px)
-        x0, y0, W, H = b[0], b[3], math.ceil((b[2] - b[0]) / res), math.ceil((b[3] - b[1]) / res)
-    if W * H > MAX_RASTER_PX:
-        raise ValueError(f"raster de {W}×{H} px ({W * H / 1e6:.0f} Mpx) trop grand : choisissez une taille maximale plus petite")
+        g = (b[0], b[3], res, math.ceil((b[2] - b[0]) / res), math.ceil((b[3] - b[1]) / res))
+    if g[3] * g[4] > MAX_RASTER_PX:
+        raise ValueError(f"raster de {g[3]}×{g[4]} px ({g[3] * g[4] / 1e6:.0f} Mpx) trop grand : choisissez une taille maximale plus petite")
+    return g
+
+def _nodes(crs, x0, y0, res, xn, yn):
+    if crs == "4326":
+        return (x0 + (xn + .5) * res) * ORIGIN / 180, np.log(np.tan((90 + (y0 - (yn + .5) * res)) * math.pi / 360)) * R
+    return x0 + (xn + .5) * res, y0 - (yn + .5) * res
+
+def render_raster(layers, crs="3857", max_px=8000, grid=None):
+    """Raster nord en haut (collage des calques). crs '3857' ou '4326'. max_px<=0 : résolution native.
+    Retourne (RGBA, x0, y0, résolution)."""
+    x0, y0, res, W, H = grid or plan_grid(layers, crs, max_px)
     res_m = res * 111320 if crs == "4326" else res
     srcs = [reduced(l, res_m / l.mpp) for l in layers]
     out = np.zeros((H, W, 4), np.uint8); step = 32; rows_chunk = max(16, min(256, 3_000_000 // W))
     xn = np.arange((W - 1) // step + 2) * step
     for r0 in range(0, H, rows_chunk):
         r1 = min(H, r0 + rows_chunk); yn = r0 + np.arange((r1 - r0 - 1) // step + 2) * step
-        if crs == "4326":
-            xs = (x0 + (xn + .5) * res) * ORIGIN / 180
-            ys = np.log(np.tan((90 + (y0 - (yn + .5) * res)) * math.pi / 360)) * R
-        else:
-            xs, ys = x0 + (xn + .5) * res, y0 - (yn + .5) * res
+        xs, ys = _nodes(crs, x0, y0, res, xn, yn)
         parts = []
         for l, (arr, k) in zip(layers, srcs):
             if l.b[2] < xs.min() or l.b[0] > xs.max() or l.b[3] < ys.min() or l.b[1] > ys.max(): continue
             U, V = uv_grid(l.inv, xs, ys, W, r1 - r0, step)
-            c, ok = bilinear(arr, np.stack([U.ravel() / k, V.ravel() / k], 1))
+            c, ok = sample(l, arr, k, U, V)
             parts.append(to_rgba(c, ok))
         if parts: out[r0:r1] = composite(parts).reshape(r1 - r0, W, 4)
     return out, x0, y0, res
+
+def render_dem(layers, crs="3857", max_px=0):
+    """Raster d'ALTITUDES réelles (float32, NaN = vide) à partir des valeurs brutes des calques MNT. Dernier calque valide au-dessus."""
+    layers = [l for l in layers if l.raw_path]
+    if not layers: raise ValueError("aucune image 16/32 bits (MNT) dans le projet")
+    x0, y0, res, W, H = plan_grid(layers, crs, max_px)
+    raws = [np.load(l.raw_path)[..., None] for l in layers]
+    out = np.full((H, W), np.nan, np.float32); step = 32; rows_chunk = max(16, min(256, 3_000_000 // W))
+    xn = np.arange((W - 1) // step + 2) * step
+    for r0 in range(0, H, rows_chunk):
+        r1 = min(H, r0 + rows_chunk); yn = r0 + np.arange((r1 - r0 - 1) // step + 2) * step
+        xs, ys = _nodes(crs, x0, y0, res, xn, yn)
+        for l, raw in zip(layers, raws):
+            if l.b[2] < xs.min() or l.b[0] > xs.max() or l.b[3] < ys.min() or l.b[1] > ys.max(): continue
+            U, V = uv_grid(l.inv, xs, ys, W, r1 - r0, step)
+            c, ok = bilinear(raw, np.stack([U.ravel(), V.ravel()], 1))
+            v = c[:, 0].reshape(r1 - r0, W); good = ok.reshape(r1 - r0, W) & np.isfinite(v)
+            out[r0:r1][good] = v[good]
+    return out, x0, y0, res
+
+def compute_adjust(layers, flags=None, side=520):
+    """Synchronise les couleurs : chaque image est ramenée vers celle(s) du dessous (moyenne/écart-type par canal,
+    mesurés dans la zone de recouvrement si elle existe, sinon sur toute l'image). Retourne [None | (échelle, décalage)]."""
+    n = len(layers); adj = [None] * n
+    ok_idx = [i for i in range(n) if not (flags and flags[i])]
+    if len(ok_idx) < 2: return adj
+    ls = [layers[i] for i in ok_idx]
+    b, mpp = union([(l.b, l.mpp) for l in ls]); span = max(b[2] - b[0], b[3] - b[1]); res = max(span / side, mpp)
+    grid = (b[0], b[3], res, math.ceil((b[2] - b[0]) / res), math.ceil((b[3] - b[1]) / res))
+    ras = []
+    for l in ls:
+        a, *_ = render_raster([l], "3857", 0, grid=grid); ras.append(a.astype(np.float32))
+    def pick(a, m):
+        px = a[m][:, :3]; good = px[(px.min(axis=1) < 235)]          # ignore le blanc du papier
+        return good if len(good) > 300 else px
+    ref = ras[0].copy(); ref_m = ref[..., 3] > 200
+    for j in range(1, len(ls)):
+        a = ras[j]; m = a[..., 3] > 200; ov = m & ref_m
+        src, dst = (pick(a, ov), pick(ref, ov)) if ov.sum() > 400 else (pick(a, m), pick(ref, ref_m))
+        if len(src) < 50 or len(dst) < 50: continue
+        sc = np.clip(dst.std(0) / np.maximum(src.std(0), 1e-3), 0.5, 2.0); off = dst.mean(0) - src.mean(0) * sc
+        adj[ok_idx[j]] = (sc, off)
+        a2 = a.copy(); a2[..., :3] = np.clip(a[..., :3] * sc + off, 0, 255)
+        ref[m] = a2[m]; ref_m |= m
+    return adj
 
 def footprint(w, h, gcps, method, n=80):
     fwd = prep(w, h, gcps, method)[0]

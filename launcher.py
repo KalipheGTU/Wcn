@@ -24,7 +24,26 @@ try:
         try: socket.create_connection(("127.0.0.1", port), 0.1).close(); break
         except OSError: time.sleep(0.1)
     logging.info("démarrage sur le port %s", port)
-    webview.create_window("KalipheTiles", f"http://127.0.0.1:{port}", width=1400, height=850)
-    webview.start()
+    class Api:                       # boîtes de dialogue natives : choisir où enregistrer le projet / les exports
+        win = None
+        def choose_folder(self):
+            r = self.win.create_file_dialog(webview.FOLDER_DIALOG)
+            return (r[0] if r else None)
+        def choose_save(self, name):
+            r = self.win.create_file_dialog(webview.SAVE_DIALOG, save_filename=name, file_types=("Projet KalipheTiles (*.ktproj)",))
+            return (r if isinstance(r, str) else (r[0] if r else None))
+    api = Api()
+    win = webview.create_window("KalipheTiles", f"http://127.0.0.1:{port}", width=1400, height=850, background_color="#0e1014", js_api=api)
+    api.win = win
+
+    def set_icon():      # icône de la fenêtre (exe ou lancement depuis les sources)
+        try:
+            import os
+            ico = os.path.join(getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__))), "static", "icon.ico")
+            from System.Drawing import Icon
+            win.native.Icon = Icon(ico)
+        except Exception as e:
+            logging.info("icône de fenêtre non appliquée : %s", e)
+    webview.start(set_icon)
 except Exception:
     fatal(traceback.format_exc())

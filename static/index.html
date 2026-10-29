@@ -1,8 +1,10 @@
-<!doctype html><html lang="fr"><head>
-    <link rel="icon" type="image/png" href="/static/icon.png"><meta charset="utf-8">
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>KalipheTiles</title>
-<link href="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css" rel="stylesheet" onerror="this.onerror=null;this.href='/vendor/maplibre-gl.css'">
-<script src="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js" onerror="this.onerror=null;this.src='/vendor/maplibre-gl.js'"></script>
+<link rel="icon" type="image/png" href="/icon.png">
+<meta name="color-scheme" content="dark">
+<link href="/vendor/maplibre-gl.css" rel="stylesheet" onerror="this.onerror=null;this.href='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css'">
+<script src="/vendor/maplibre-gl.js"></script>
+<script>window.maplibregl||document.write('<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"><\/script>')</script>
 <script src="/vendor/proj4.js"></script>
 <script>window.proj4||document.write('<script src="https://unpkg.com/proj4@2.12.1/dist/proj4.js"><\/script>')</script>
 <style>
@@ -23,7 +25,7 @@ button,select{padding:6px 10px;border-radius:6px;border:0;cursor:pointer}
 .ov input[type=text]{flex:1;min-width:0;padding:6px 8px;border:1px solid #bbb;border-radius:6px}
 .ov label{background:#fff;padding:4px 6px;border-radius:6px;font-size:12px;white-space:nowrap}
 #gstep:empty{display:none}
-#ws{flex:1;position:relative;min-height:0;background:#b0bec5;overflow:hidden}#mapwrap:hover:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,#fca31112,transparent 65%);animation:mapglow 2.5s ease-in-out infinite alternate}@keyframes mapglow{from{opacity:.2}to{opacity:1}}
+#ws{flex:1;position:relative;min-height:0;background:#b0bec5;overflow:hidden}
 .win{position:absolute;display:flex;flex-direction:column;background:#fff;border:1px solid #14213d;border-radius:8px;box-shadow:0 4px 18px #0006;resize:both;overflow:hidden;min-width:220px;min-height:90px}
 .win.min{height:auto!important;min-height:0;resize:none}.win.min .wb{display:none}
 .wh{background:#14213d;color:#fff;padding:4px 8px;cursor:move;display:flex;align-items:center;justify-content:space-between;user-select:none}
@@ -67,17 +69,74 @@ body.moveon .maplibregl-marker{pointer-events:none}
 #status{padding:6px 12px;background:#eee;font-size:13px}
 dialog{border:0;border-radius:10px;padding:18px;width:min(460px,92vw)}
 dialog input{width:100%;padding:6px;margin:4px 0 12px}dialog small{color:#555}
-body.dark{background:#111827;color:#e5e7eb}body.dark #ws{background:#263238}body.dark .win{background:#1f2937;border-color:#64748b}body.dark .wh{background:#0b1324}body.dark .tabs{background:#374151}body.dark .tab small,body.dark .tab label{color:#d1d5db}body.dark #status{background:#111827;color:#e5e7eb}body.dark #gcp-table th{background:#374151;color:#fff}#gcp-table th,#gcp-table td{padding:3px;border-bottom:1px solid #aaa;text-align:center}#gcp-table input{width:100%;min-width:68px;padding:4px;border:1px solid #aaa;border-radius:4px}#t-pts h4{font-size:13px}</style></head><body>
+
+
+/* ===== v9 : accueil, onglets d'images, loupe, calques sur la carte ===== */
+#landing{position:absolute;inset:0;z-index:50;background:#2a2a2a url(/world.png) center/contain no-repeat;display:flex;align-items:center;justify-content:center;color:#eee}
+#landing.hide{display:none}
+#landing .lw{background:#14161cdd;border:1px solid #ffffff22;border-radius:14px;padding:26px 36px;text-align:center;max-width:560px;backdrop-filter:blur(3px)}
+#landing .lico{width:84px;height:84px;object-fit:contain}#landing h1{margin:6px 0 4px;font-size:30px;color:#fca311}
+#landing p{margin:0 0 14px;color:#cfd2d8}#landing .lb{display:flex;gap:12px;justify-content:center;margin:10px 0}
+#landing button.big{padding:12px 22px;font-size:15px;background:#fca311;color:#14100a;border:0;font-weight:700;border-radius:8px;cursor:pointer}
+#landing button.big+button.big{background:#262a33;color:#eee;border:1px solid #fca311}
+#landing small{color:#9aa1ad}#landing ol{text-align:left;color:#cfd2d8;font-size:13px;margin:12px 0 0;padding-left:20px}
+#itabs{position:absolute;left:0;right:0;top:0;height:30px;display:flex;align-items:flex-end;gap:2px;padding:0 6px;overflow-x:auto;overflow-y:hidden;background:#d5d9de;z-index:3}
+.itab{display:flex;align-items:center;gap:8px;max-width:180px;padding:5px 10px;border-radius:8px 8px 0 0;background:#e9ecef;font-size:12px;cursor:pointer;white-space:nowrap;border:1px solid #0002;border-bottom:0}
+.itab span{overflow:hidden;text-overflow:ellipsis}.itab .x{opacity:.5;font-size:10px;padding:1px 4px;border-radius:50%}.itab .x:hover{opacity:1;background:#fca31144}
+.itab.on{background:#fff;font-weight:600;box-shadow:0 -2px 0 #fca311 inset}.itab.plus{font-size:16px;padding:2px 11px;background:transparent;border:0}
+#w-img #iv{inset:30px 0 0 0}
+.pt{width:46px;height:46px;border:0;border-radius:0;background:url(/loupe.png) center/contain no-repeat;box-shadow:none;font:0;color:transparent;outline:0}
+.pt .pn{position:absolute;right:-2px;top:-8px;font:700 11px/16px sans-serif;color:#14100a;background:#fca311;border-radius:9px;min-width:17px;padding:0 4px;text-align:center;box-shadow:0 1px 3px #0008}
+.pt.wait{background:url(/loupe.png) center/contain no-repeat;opacity:.7;filter:hue-rotate(160deg) saturate(1.5)}
+.pt.sel{background:url(/loupe.png) center/contain no-repeat;outline:0;filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 3px #2a9d8f)}
+#mlay{position:absolute;top:52px;right:8px;z-index:6;background:#fffe;border-radius:8px;padding:6px 10px;box-shadow:0 1px 6px #0004;font-size:13px;max-width:240px}
+#mlay:empty,#mlay.hide{display:none}#mlay .mrow{display:flex;gap:6px;align-items:center;padding:2px 0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dest{display:flex;gap:8px;align-items:center;margin:6px 0}.dest span{font-size:11px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+<style id="darkcss">
+/* ===== Thème sombre ===== */
+:root{--bg:#0e1014;--bg2:#161920;--bg3:#1f232c;--bg4:#2a2f3a;--line:#303642;--tx:#e9eaee;--mut:#9aa1ad;--acc:#fca311;--acc2:#ffb94d}
+html,body{background:var(--bg);color:var(--tx);color-scheme:dark}
+header{background:#090b0e;border-bottom:1px solid var(--line)}
+#ws{background:#1a1d24}
+button,select,input[type=text],input[type=number],textarea{background:var(--bg3);color:var(--tx);border:1px solid var(--line);border-radius:6px}
+button{cursor:pointer}button:hover,select:hover{border-color:var(--acc);color:var(--acc2)}
+button:disabled{opacity:.45;cursor:default;border-color:var(--line);color:var(--mut)}
+#go,.addbtn,button.on,.tabs button.on,.tab button.on,button[style*="fca311"]{background:var(--acc)!important;color:#14100a!important;border-color:var(--acc)!important;font-weight:600}
+#go:hover,.addbtn:hover,button[style*="fca311"]:hover{background:var(--acc2)!important}
+input[type=file]{color:var(--mut)}
+input:focus,select:focus,textarea:focus{outline:1px solid var(--acc);border-color:var(--acc)}
+input[type=range]{accent-color:var(--acc)}input[type=checkbox]{accent-color:var(--acc)}
+.win{background:var(--bg2);border-color:var(--line);color:var(--tx);box-shadow:0 6px 24px #000a}
+.wh{background:#090b0e;border-bottom:2px solid var(--acc);color:var(--tx)}
+.wh button{background:var(--bg3);color:var(--acc);border:1px solid var(--line)}
+.tabs{background:#0b0d11;border-bottom:1px solid var(--line)}
+.tabs button{background:var(--bg3);border:1px solid var(--line);color:var(--tx)}
+.tab{background:var(--bg2);color:var(--tx)}.tab h4{color:var(--acc)}.tab small,dialog small{color:var(--mut)}
+#list{color:var(--tx)}#list div{border-bottom:1px solid var(--line)}#list div:hover{background:var(--bg3)}#list div.sel,.ly.sel{background:#3a2e12}
+#list a,.ly a{color:var(--acc)}.ly{border-bottom:1px solid var(--line)}.ly i{color:var(--mut)}
+.mbar,.ov label,#res-list{background:#12151bf2!important;color:var(--tx);border:1px solid var(--line)}
+#res-list div{border-bottom:1px solid var(--line)}#res-list div:hover{background:var(--bg3)}
+#status{background:#090b0e;color:var(--tx);border-top:1px solid var(--line)}#status a{color:var(--acc)}
+dialog{background:var(--bg2);color:var(--tx);border:1px solid var(--acc)}dialog::backdrop{background:#000a}
+.ov input[type=text]{background:#12151b;border-color:var(--line)}
+.rt{background:var(--bg4)}.sw{border-color:var(--line)}
+.maplibregl-ctrl-group{background:var(--bg3)!important}.maplibregl-ctrl-group button span{filter:invert(1) brightness(1.1)}
+.maplibregl-ctrl-attrib{background:#0c0e12cc!important;color:var(--mut)!important}.maplibregl-ctrl-attrib a{color:var(--acc2)!important}
+.maplibregl-ctrl-scale{background:#0c0e12cc;color:var(--tx);border-color:var(--mut)}
+.zb button{background:#12151bdd;color:var(--acc);border:1px solid var(--line)}
+
+#itabs{background:#090b0e}.itab{background:#1a1d24;color:#cfd2d8;border-color:var(--line)}.itab.on{background:var(--bg3);color:#fff}.itab.plus{background:transparent;color:var(--acc)}
+#mlay{background:#12151bf2;color:var(--tx);border:1px solid var(--line)}.dest span{color:var(--mut)}
+</style></head><body>
 <header>
  <b>KalipheTiles</b>
- <button id="b-save" style="background:#fca311" title="Enregistrer le projet (Ctrl+S)">💾 Enregistrer</button>
- <button id="b-recent" title="Projets récents et accueil">🏠 Accueil / récents</button>
- <button id="b-merge" title="Fusionner les images géoréférencées">🧩 Fusionner</button>
- <button id="b-bundle" title="Exporter toutes les images, versions et la fusion pour un logiciel externe">📦 Exporter l'ensemble</button>
- <button id="b-output" title="Choisir le dossier de sortie des tuiles">📁 Dossier des tuiles</button>
- <button id="b-custom-map" title="Ajouter un service de tuiles personnalisé, par exemple votre NAS">🗺 Service perso</button>
- <button id="b-point-size" title="Changer la taille des points de contrôle">🔴 Points : M</button>
+ <label title="Importer des vecteurs ou un dessin DXF" style="display:inline-flex;gap:4px;align-items:center;background:#263957;padding:5px 8px;border-radius:6px;cursor:pointer">🗺️ Import vecteur / DXF<input id="vector-file" type="file" accept=".geojson,.json,.kml,.zip,.dxf" style="display:none"></label>
+ <button id="vector-dxf" title="Exporter le dernier vecteur importé en DXF">⇩ DXF</button>
+ <button id="pmtiles-export" title="Convertir les MBTiles générés en PMTiles">⇩ PMTiles</button>
+ <small id="cad-status" style="max-width:320px"></small>
  <input type="file" id="file" title="Ouvrir une nouvelle image (nouveau projet)" accept=".jpg,.jpeg,.png,.tif,.tiff,.webp">
+ <button id="b-savetop" title="Enregistrer le projet (Ctrl+S)">💾 Enregistrer</button><button id="b-opentop" title="Ouvrir un projet .ktproj">📂 Projet</button>
  <select id="method"><option value="affine">Affine (3+ pts)</option><option value="poly2">Polynôme 2 (6+ pts)</option><option value="tps">Thin plate spline (4+ pts)</option></select>
  <select id="base">
   <optgroup label="Gratuits">
@@ -86,25 +145,30 @@ body.dark{background:#111827;color:#e5e7eb}body.dark #ws{background:#263238}body
   <optgroup label="Mapbox (token)"><option value="mbs">Mapbox Satellite</option><option value="mbr">Mapbox Rues</option><option value="mbo">Mapbox Outdoors</option></optgroup>
   <optgroup label="Google (clé API)"><option value="gr">Google Plan</option><option value="gs">Google Satellite</option></optgroup>
  </select>
- <button id="b-globe" title="Basculer entre la projection Globe et la projection plane">🌐 Vue Globe</button>
- <button id="theme" title="Basculer le thème clair/sombre">🌙 Mode sombre</button><button id="cfg" title="Tokens et clés API">⚙ Clés</button><button id="b-help" title="Aide et raccourcis">❔ Aide</button><button id="b-about" title="À propos">ⓘ À propos</button><button id="b-diag">🔧 Diagnostic</button>
+ <button id="b-theme" title="Passer en mode clair">☀</button><button id="cfg" title="Tokens et clés API">⚙ Clés</button><button id="b-diag">🔧 Diagnostic</button>
  <button id="undo" title="Ctrl+Z">↶ Annuler</button><button id="redo" title="Ctrl+Y">↷ Rétablir</button>
  <button id="go" disabled>Géoréférencer</button>
 </header>
 <div id="ws">
+ <div id="landing"><div class="lw"><img class="lico" src="/icon.png" alt=""><h1>KalipheTiles</h1>
+  <p>Géoréférencez vos cartes et images, assemblez-les en collage, exportez tuiles, GeoTIFF, MNT et heightmaps.</p>
+  <div class="lb"><button class="big" id="l-open">🖼 Ouvrir une image</button><button class="big" id="l-proj">📂 Ouvrir un projet</button></div>
+  <small>ou glissez-déposez ici une image (JPG, PNG, TIFF, MNT 16 bits) ou un projet .ktproj</small>
+  <ol><li>Chargez l'image : chaque image s'ouvre dans un nouvel onglet.</li><li>Posez 3 points ou plus : cliquez sur la loupe 🔍 dans l'image puis sur la carte (ou saisissez les coordonnées).</li><li>L'aperçu apparaît tout de suite sur la carte ; exportez quand c'est bon.</li></ol></div></div>
  <div class="win" id="w-img" style="left:6px;top:6px;width:46%;height:56%"><div class="wh"><span>🖼 Image à géoréférencer</span><span class="wbtn"><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
-  <div class="wb"><div id="iv"><div id="ib"></div><div class="zb"><button id="zi" title="Zoom +">+</button><button id="zo" title="Zoom −">−</button><button id="zf" title="Ajuster">⤢</button></div></div></div></div>
+  <div class="wb"><div id="itabs"></div><div id="iv"><div id="ib"></div><div class="zb"><button id="zi" title="Zoom +">+</button><button id="zo" title="Zoom −">−</button><button id="zf" title="Ajuster">⤢</button></div></div></div></div>
  <div class="win" id="w-map" style="left:48%;top:6px;width:51%;height:96%"><div class="wh"><span>🗺 Carte</span><span class="wbtn"><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
   <div class="wb"><div id="mapwrap"><div id="map"></div>
   <div class="mbar"><button id="b-ovt" title="Masquer / afficher les outils sur la carte">☰</button>
    <label title="Afficher / masquer l'image sur la carte"><input type="checkbox" id="imgvis" checked> Image</label>
    <input type="range" id="opac" min="0" max="1" step=".05" value=".85" title="Transparence de l'image">
-   <button id="b-move" title="Déplacer l'image avec tous ses points (glisser sur la carte)">✋ Déplacer</button><button id="b-terrain" title="Activer/désactiver le relief 3D">⛰ Relief 3D</button><button id="b-mapfilter" title="Afficher les réglages visuels de l’image sur la carte">🎨 Image</button></div>
-  <div id="mapfilters" style="display:none;position:absolute;right:8px;top:52px;z-index:7;background:#fff;padding:10px;border-radius:8px;box-shadow:0 1px 8px #0005;width:220px;color:#111"><b>Aspect de l’image sur la carte</b><label>Contraste <input id="map-contrast" type="range" min="-1" max="1" step=".05" value="0" style="width:100%"></label><label>Saturation <input id="map-sat" type="range" min="-1" max="1" step=".05" value="0" style="width:100%"></label><label>Teinte (°) <input id="map-hue" type="range" min="0" max="360" step="5" value="0" style="width:100%"></label><label>Luminosité min. <input id="map-brightmin" type="range" min="0" max="1" step=".05" value="0" style="width:100%"></label><label>Luminosité max. <input id="map-brightmax" type="range" min="0" max="1" step=".05" value="1" style="width:100%"></label><button id="map-filter-reset">Réinitialiser</button></div>
+   <button id="b-ml" title="Images affichées sur la carte">🗂</button><button id="b-refresh" title="Actualiser l'aperçu de toutes les images">🔄</button><button id="b-3d" title="Relief 3D">⛰ 3D</button>
+   <button id="b-move" title="Déplacer l'image avec tous ses points (glisser sur la carte)">✋ Déplacer</button></div>
+  <div id="mlay"></div>
   <div class="ov">
    <div class="row"><input type="text" id="q" placeholder="Chercher un lieu (ville, adresse…)"><button id="qgo">🔍</button></div>
    <div id="res-list"></div>
-   <div class="row"><input type="number" id="coord-lat" step="any" placeholder="Latitude (ex. 43.34)"><input type="number" id="coord-lon" step="any" placeholder="Longitude (ex. 3.21)"><input type="text" id="coord" placeholder="Autres formats : grades, UTM, Lambert…" style="display:none"></div>
+   <div class="row"><input type="text" id="coord1" placeholder="Latitude"><input type="text" id="coord2" placeholder="Longitude"><input type="text" id="czone" placeholder="Zone 31T" style="display:none;max-width:84px;flex:0 0 84px"></div>
    <div class="row">
     <select id="cf"><option value="auto">Auto</option><option value="dd">Degrés (DD / DMS / DDM)</option><option value="grp">Grades — méridien de Paris (39g 90 , 5g 30)</option><option value="grg">Grades — Greenwich</option><option value="utm">UTM</option><option value="l93">Lambert 93</option><option value="dzn">Lambert Nord Algérie (km ou m)</option><option value="merc">Web Mercator</option></select>
     <label><input type="checkbox" id="lf"> lon, lat</label><button id="cgo">Placer le point</button></div>
@@ -117,33 +181,25 @@ body.dark{background:#111827;color:#e5e7eb}body.dark #ws{background:#263238}body
   </div></div></div>
  <div class="win" id="w-pan" style="left:6px;top:58%;width:46%;height:40%"><div class="wh"><span>🧰 Outils</span><span class="wbtn"><button class="wf" title="Plein écran (double-clic sur la barre)">⛶</button><button class="wm" title="Réduire">–</button></span></div>
   <div class="wb col">
-   <div class="tabs"><button class="on" data-t="pts">Points</button><button data-t="lay">Calques</button><button data-t="img">Image</button><button data-t="loc">Localisation</button><button data-t="exp">Tuiles &amp; export</button><button data-t="cloud">Cloud</button><button data-t="dem">MNT / OpenTopography</button><button data-t="proj">Projet</button></div>
-   <div class="tab on" id="t-pts">
-    <h4 style="margin:6px 8px 2px">Coordonnées des points de contrôle (EPSG:4326)</h4>
-    <small style="margin:0 8px 6px">X/Y = position en pixels dans l’image (ex. X=884, Y=298). Longitude/latitude = position réelle sur Terre, en degrés décimaux. Une ligne n’est utilisable que si ses 4 valeurs sont remplies. Un seul point peut être enregistré, mais il faut au moins 3 points complets pour le géoréférencement affine.</small>
-    <div style="overflow:auto;max-height:155px"><table id="gcp-table" style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr><th>Pt</th><th>Pixel X</th><th>Pixel Y</th><th>Longitude</th><th>Latitude</th></tr></thead><tbody>
-    <tr><td>P1</td><td><input type="number" id="gpx0" min="0" step="any"></td><td><input type="number" id="gpy0" min="0" step="any"></td><td><input type="number" id="glon0" step="any"></td><td><input type="number" id="glat0" step="any"></td></tr>
-    <tr><td>P2</td><td><input type="number" id="gpx1" min="0" step="any"></td><td><input type="number" id="gpy1" min="0" step="any"></td><td><input type="number" id="glon1" step="any"></td><td><input type="number" id="glat1" step="any"></td></tr>
-    <tr><td>P3</td><td><input type="number" id="gpx2" min="0" step="any"></td><td><input type="number" id="gpy2" min="0" step="any"></td><td><input type="number" id="glon2" step="any"></td><td><input type="number" id="glat2" step="any"></td></tr>
-    <tr><td>P4</td><td><input type="number" id="gpx3" min="0" step="any"></td><td><input type="number" id="gpy3" min="0" step="any"></td><td><input type="number" id="glon3" step="any"></td><td><input type="number" id="glat3" step="any"></td></tr>
-    </tbody></table></div>
-    <div class="r" style="padding:4px 8px"><button id="b-gcp-fill">Remplir les coins de l’image</button><button id="b-gcp-apply" style="background:#fca311">Appliquer les points renseignés</button></div>
-    <div id="list"></div></div>
+   <div class="tabs"><button class="on" data-t="pts">Points</button><button data-t="lay">Calques</button><button data-t="img">Image</button><button data-t="loc">Localisation</button><button data-t="ter">Terrain</button><button data-t="exp">Tuiles &amp; export</button><button data-t="cloud">Cloud</button><button data-t="proj">Projet</button></div>
+   <div class="tab on" id="t-pts"><div id="list"></div></div>
    <div class="tab" id="t-lay"><label class="addbtn">➕ Ajouter une image (collage)<input type="file" id="addimg" accept=".jpg,.jpeg,.png,.tif,.tiff,.webp" style="display:none"></label>
-    <div id="lyr" style="margin-top:8px"></div><small>Réorganisez les images par glisser-déposer pour modifier leur ordre de profondeur (Z).</small>
+    <label class="chk" style="margin-top:8px"><input type="checkbox" id="sync"> Synchroniser les couleurs entre les images (automatique)</label>
+    <div id="lyr" style="margin-top:8px"></div>
     <small>Chaque image a ses propres points et sa méthode. Les images visibles et calées sont fusionnées dans un seul MBTiles / GeoTIFF / PNG (ordre : de haut en bas = du dessous au dessus avec ▲▼).</small></div>
    <div class="tab" id="t-img">
-    <label style="display:flex;gap:6px;align-items:center"><input id="keep-edit" type="checkbox" style="width:auto"> Exporter chaque résultat de manipulation dans le dossier exports</label><small>Chaque opération conserve aussi une version précédente. Les fichiers exportés restent séparés de l’image de travail.</small><h4>Rogner</h4><div class="r"><button id="b-crop">Sélectionner la zone</button><button id="b-cropgo">Appliquer</button></div><small id="cropinfo"></small>
+    <h4>Rogner</h4><div class="r"><button id="b-crop">Sélectionner la zone</button><button id="b-cropgo">Appliquer</button></div><small id="cropinfo"></small>
     <h4>Redresser / pivoter (image de travers)</h4><div class="r"><input type="number" id="rot" value="0" step="0.1"><button id="b-rot">Pivoter</button><button id="b-ang">Mesurer l'angle</button></div>
     <small>Positif = anti-horaire. « Mesurer » : cliquez 2 points d'une ligne qui doit être horizontale (ligne de grille, bord). Les points déjà posés suivent la rotation.</small>
-    <h4>Harmoniser automatiquement les couleurs</h4><div class="r"><button id="b-harmonize">Ajuster contraste et couleurs</button></div><small>Correction douce par étirement des tons (percentiles 1–99), en conservant la transparence. Utilisez « Restaurer » pour revenir à l’original.</small><h4>Supprimer des couleurs</h4><div class="r"><button id="b-pick">Pipette</button><span style="flex:0">tolérance</span><input type="number" id="tol" value="40" min="0" max="255"></div>
+    <h4>Supprimer des couleurs</h4><div class="r"><button id="b-pick">Pipette</button><span style="flex:0">tolérance</span><input type="number" id="tol" value="40" min="0" max="255"></div>
     <div id="sws"></div><button id="b-rm">Supprimer ces couleurs (→ transparent)</button>
+    <h4>Contraste / couleurs</h4><button id="b-contrast">Ajuster contraste et couleurs (auto)</button><small>Étirement des tons (1–99 %) par canal, sans perte, transparence conservée.</small>
     <h4>&nbsp;</h4><button id="b-reset">Restaurer l'image d'origine</button><small>Rogner / pivoter / couleurs ne s'annulent pas avec Ctrl+Z : utilisez ce bouton.</small>
    </div>
    <div class="tab" id="t-loc">
     <label>Définir la position géographique de l'image</label>
     <select id="lm"><option value="vis">Visuellement (points image ↔ carte)</option><option value="wld">Fichier World (.wld .tfw .jgw .pgw .gfw)</option><option value="ozi">OziExplorer (.map)</option><option value="tab">MapInfo (.tab)</option><option value="bbox">Emprise (Ouest Sud Est Nord)</option><option value="aff">Transformation affine (6 nombres)</option><option value="cor">Coins (E1 N1 E2 N2 E3 N3)</option></select>
-    <div data-m="wld ozi tab"><label>Fichier</label><input type="file" id="lf"></div>
+    <div data-m="wld ozi tab"><label>Fichier</label><input type="file" id="locfile"></div>
     <div data-m="wld tab bbox aff cor"><label>Système des coordonnées saisies</label>
      <select id="lcrs"><option value="wgs">WGS84 (lon, lat °)</option><option value="merc">Web Mercator (m)</option><option value="l93">Lambert 93 (m)</option><option value="dzn">Lambert Nord Algérie (m)</option><option value="utm">UTM WGS84 (zone ci-dessous)</option></select>
      <div class="r"><input type="number" id="lz" value="31" min="1" max="60"><select id="lh"><option value="N">Nord</option><option value="S">Sud</option></select></div></div>
@@ -152,6 +208,26 @@ body.dark{background:#111827;color:#e5e7eb}body.dark #ws{background:#263238}body
     <div data-m="cor"><label>Haut-gauche, haut-droit, bas-droit : E1 N1 E2 N2 E3 N3</label><textarea id="cor" rows="2"></textarea></div>
     <div data-m="vis"><small>Cliquez un point sur l'image puis sa position sur la carte, ou saisissez ses coordonnées (panneau sur la carte).</small></div>
     <div data-m="wld ozi tab bbox aff cor"><button id="b-loc">Appliquer</button></div>
+   </div>
+   <div class="tab" id="t-ter">
+    <h4>Relief 3D</h4>
+    <div class="r"><button id="b-3d2">⛰ Activer / désactiver le relief 3D</button></div>
+    <label>Exagération du relief : <b id="exv">1.5</b></label><input type="range" id="exag" min="0.5" max="5" step="0.1" value="1.5" style="width:100%">
+    <small>Altitudes : tuiles gratuites « AWS Terrain ». Les images géoréférencées épousent le relief. Inclinez / tournez la carte avec le clic droit + glisser.</small>
+    <h4>OpenTopography — MNT de l'emprise</h4>
+    <label>Clé API (gratuite : opentopography.org → My Account → API key)</label><input type="text" id="ot-key" placeholder="votre clé API">
+    <label>Jeu de données</label><select id="otdem"><option value="COP30">Copernicus GLO-30 (30 m)</option><option value="COP90">Copernicus GLO-90 (90 m)</option><option value="SRTMGL1">SRTM GL1 (30 m)</option><option value="SRTMGL3">SRTM GL3 (90 m)</option><option value="NASADEM">NASADEM (30 m)</option><option value="AW3D30">ALOS World 3D (30 m)</option><option value="EU_DTM">EU DTM (30 m, Europe)</option><option value="SRTM15Plus">SRTM15+ (500 m)</option></select>
+    <div class="r"><button id="ot-save">Enregistrer la clé</button><button id="ot-test">Tester la connexion</button></div>
+    <h4>Heightmap OpenTopography</h4>
+    <label>Emprise du MNT (OpenTopography se référence par…)</label>
+    <select id="hm-mode"><option value="footprint">Contour réel de l'image (ou de l'ensemble des images)</option><option value="gcps">Rectangle des 4 points de référencement</option><option value="view">Emprise visible sur la carte</option></select>
+    <div class="r"><label style="flex:1">Marge (°)<input type="number" id="hm-margin" value="0" step="0.001" min="0"></label>
+    <label style="flex:1">Taille max (px)<select id="hm-side"><option value="0">Taille d'origine</option><option value="4096">4096</option><option value="2048">2048</option><option value="1024">1024</option><option value="512">512</option></select></label></div>
+    <label class="chk"><input type="checkbox" id="hm-clip"> Découper au contour de l'image (hors contour = vide)</label>
+    <div><span class="chk"><input type="checkbox" class="hk" value="tif" checked> GeoTIFF altitudes</span><span class="chk"><input type="checkbox" class="hk" value="png16" checked> PNG 16 bits (heightmap)</span><span class="chk"><input type="checkbox" class="hk" value="json" checked> JSON (métadonnées)</span></div>
+    <div class="dest"><button id="b-dest2">📁 Dossier…</button><span id="destv2">Par défaut : dossier du projet</span></div>
+    <div class="r"><button id="hm-show">Afficher l'emprise sur la carte</button><button id="hm-go" style="background:#fca311">Exporter la heightmap</button></div>
+    <div id="ot-out" style="white-space:pre-wrap;font-size:12px;margin-top:6px"></div>
    </div>
    <div class="tab" id="t-exp">
     <h4>Niveaux de zoom des tuiles (0 – 24)</h4>
@@ -164,8 +240,8 @@ body.dark{background:#111827;color:#e5e7eb}body.dark #ws{background:#263238}body
     <label>Résolution des rasters exportés</label><select id="maxpx"><option value="0">Native (pleine résolution)</option><option value="16000">16 000 px max</option><option value="8000">8 000 px max</option><option value="4000">4 000 px max</option></select>
     <div><span class="chk"><input type="checkbox" class="xk" value="geotiff" checked> GeoTIFF</span><span class="chk"><input type="checkbox" class="xk" value="geojson" checked> GeoJSON (emprise + points)</span><span class="chk"><input type="checkbox" class="xk" value="shp"> Shapefile (emprise)</span>
      <span class="chk"><input type="checkbox" class="xk" value="kmz"> KMZ (Google Earth)</span><span class="chk"><input type="checkbox" class="xk" value="gpkg"> GeoPackage (tuiles)</span>
-     <span class="chk"><input type="checkbox" class="xk" value="png_wld"> PNG + .pgw</span><span class="chk"><input type="checkbox" class="xk" value="jpg_wld"> JPG + .jgw</span><span class="chk"><input type="checkbox" class="xk" value="tif_wld"> TIFF + .tfw</span>
-     <span class="chk"><input type="checkbox" class="xk" value="original"> Image originale</span><span class="chk"><input type="checkbox" class="xk" value="current"> Image modifiée / rognée</span><span class="chk"><input type="checkbox" class="xk" value="limits"> JSON des limites (image + emprise géographique)</span></div>
+     <span class="chk"><input type="checkbox" class="xk" value="png_wld"> PNG + .pgw</span><span class="chk"><input type="checkbox" class="xk" value="jpg_wld"> JPG + .jgw</span><span class="chk"><input type="checkbox" class="xk" value="tif_wld"> TIFF + .tfw</span><span class="chk"><input type="checkbox" class="xk" value="dem_tif"> MNT : altitudes réelles (images 16 bits)</span><span class="chk"><input type="checkbox" class="xk" value="heightmap"> Heightmap OpenTopography (options : onglet Terrain)</span><span class="chk"><input type="checkbox" class="xk" value="limits_json" checked> JSON des limites (image + emprise)</span><span class="chk"><input type="checkbox" class="xk" value="mbtiles"> MBTiles (après Géoréférencer)</span><span class="chk"><input type="checkbox" class="xk" value="img_original"> Image originale</span><span class="chk"><input type="checkbox" class="xk" value="img_edited"> Image rognée / modifiée</span><span class="chk"><input type="checkbox" class="xk" value="img_color"> Image aux couleurs synchronisées</span></div>
+    <div class="dest"><button id="b-dest">📁 Dossier de destination…</button><span id="destv">Par défaut : dossier du projet</span></div>
     <div class="r"><button id="b-exp" style="background:#fca311">Exporter</button><button id="b-open">Ouvrir le dossier</button></div><small id="exs"></small>
    </div>
    <div class="tab" id="t-cloud">
@@ -176,35 +252,22 @@ body.dark{background:#111827;color:#e5e7eb}body.dark #ws{background:#263238}body
     <label>Dossier dans le bucket (facultatif)</label><input type="text" id="s3p" placeholder="cartes">
     <div><span class="chk"><input type="checkbox" class="uk" value="tiles" checked> Tuiles + page de partage</span><span class="chk"><input type="checkbox" class="uk" value="mbtiles" checked> MBTiles</span><span class="chk"><input type="checkbox" class="uk" value="exports" checked> Exports</span></div>
     <button id="b-up" style="background:#fca311">Envoyer</button><small id="ups"></small>
-    <small>La clé secrète reste masquée dans le champ. Ne partagez jamais votre fichier de configuration. Le bucket doit autoriser la lecture publique (et CORS) pour que le lien soit partageable.</small>
-   </div>
-   <div class="tab" id="t-dem">
-    <h4>MNT — OpenTopography</h4>
-    <small>Télécharge un modèle numérique de terrain GeoTIFF pour l’emprise géographique saisie. Une clé API OpenTopography est nécessaire. Les valeurs d’emprise doivent être en longitude/latitude WGS84.</small>
-    <label>Clé API OpenTopography</label><input type="password" id="ot-key" autocomplete="off" placeholder="Votre clé API">
-    <label>Jeu de données</label><select id="ot-dem"><option value="SRTMGL1">SRTM GL1 — 30 m environ</option><option value="COP30">Copernicus GLO-30</option><option value="NASADEM">NASADEM</option><option value="AW3D30">ALOS World 3D — 30 m</option><option value="SRTMGL3">SRTM GL3 — 90 m environ</option><option value="COP90">Copernicus GLO-90</option></select>
-    <label>Emprise EPSG:4326</label><div class="r"><input type="number" id="ot-west" step="any" placeholder="Ouest (lon)"><input type="number" id="ot-south" step="any" placeholder="Sud (lat)"></div>
-    <div class="r"><input type="number" id="ot-east" step="any" placeholder="Est (lon)"><input type="number" id="ot-north" step="any" placeholder="Nord (lat)"></div>
-    <div class="r"><label style="flex:1">Buffer (m)<input type="number" id="ot-buffer" value="0" step="10" placeholder="0 = aucun"></label></div>
-    <small>Le buffer positif agrandit l’emprise; le négatif la réduit. L’emprise automatique reprend la zone visible de la carte.</small>
-    <div class="r"><button id="ot-use-map">Emprise de la carte</button><button id="ot-use-gcps">Emprise des 4 points</button><button id="ot-download" style="background:#fca311">Télécharger le MNT GeoTIFF</button></div>
-    <small id="ot-status"></small>
+    <small>Les clés sont enregistrées en clair sur ce PC. Le bucket doit autoriser la lecture publique (et CORS) pour que le lien soit partageable.</small>
    </div>
    <div class="tab" id="t-proj">
-    <div class="r"><button id="b-openroot">Ouvrir le dossier du projet</button></div><small id="prs">Le bouton Enregistrer est disponible en haut de la fenêtre.</small>
+    <div class="r"><button id="b-save" style="background:#fca311">💾 Enregistrer le projet (Ctrl+S)</button><button id="b-saveas">Enregistrer sous…</button><button id="b-openroot">Ouvrir le dossier</button></div><small id="prs"></small>
     <label>Ouvrir un projet (.ktproj)</label><input type="file" id="pf" accept=".ktproj,.zip">
     <small>Un projet contient l'image (originale et courante), les points, la méthode et les niveaux de zoom.</small>
    </div>
   </div></div>
 </div>
-<dialog id="helpdlg"><h3>Aide — KalipheTiles</h3><p>1. Importez une image. 2. Cliquez des points correspondants sur l’image et la carte. 3. Lancez Géoréférencer. 4. Réglez les calques et exportez depuis « Tuiles & export ».</p><p>Dans « Calques », utilisez la visibilité et faites glisser une ligne pour changer l’ordre Z. Dans « Image », les traitements modifient une copie de travail ; exportez l’image courante depuis les options d’export.</p><p>Relief 3D : la carte peut recadrer ou masquer certains overlays selon la projection et le terrain. Désactivez puis réactivez l’image si l’affichage est incomplet.</p><button id="helpclose">Fermer</button></dialog><dialog id="aboutdlg"><h3>KalipheTiles</h3><p>Outil local de géoréférencement, assemblage et export de cartes raster.</p><p>Profil GitHub du projet : <a href="https://github.com/Mayssa1000" target="_blank" rel="noopener noreferrer">github.com/Mayssa1000</a></p><p>Version : build de développement</p><button id="aboutclose">Fermer</button></dialog>
 <div id="status">1) Chargez une image · 2) placez un point sur l'image, puis sa position sur la carte (clic ou coordonnées)</div>
 <dialog id="dg"><h3 style="margin-top:0">Diagnostic</h3><pre id="dgt" style="white-space:pre-wrap;font-size:12px"></pre><div class="row" style="justify-content:flex-end"><button id="dgc">Fermer</button></div></dialog>
 <dialog id="dlg">
  <h3 style="margin-top:0">Clés et tokens</h3>
- Token Mapbox <input id="k-mb" type="password" autocomplete="off" placeholder="pk.…">
- Clé API Google (Map Tiles API activée) <input id="k-g" type="password" autocomplete="off" placeholder="AIza…">
- <button type="button" id="k-show">👁 Afficher les clés</button> <small>Enregistrées dans .kaliphetiles.json sur ce PC. Ne partagez pas ce fichier et ne mettez jamais de clé privée dans un dépôt Git.</small><p><small>Tutoriel : créez une clé chez le fournisseur, activez le service de tuiles correspondant, collez-la ici, puis cliquez sur Enregistrer. Si le fond ne s’affiche pas, utilisez Diagnostic. Les fonds OpenStreetMap et Esri ne demandent généralement pas de clé.</small></p>
+ Token Mapbox <input id="k-mb" placeholder="pk.…">
+ Clé API Google (Map Tiles API activée) <input id="k-g" placeholder="AIza…">
+ <small>Enregistrés en clair sur ce PC (fichier .kaliphetiles.json dans votre dossier utilisateur).</small>
  <div class="row" style="justify-content:flex-end;margin-top:12px"><button id="k-cancel">Annuler</button><button id="k-save" style="background:#fca311">Enregistrer</button></div>
 </dialog>
 <script>
@@ -294,27 +357,9 @@ const BASES={osm:{z:19,a:"© OpenStreetMap"},topo:{z:17,a:"© OpenTopoMap, OSM"}
  mbs:{z:22,a:"© Mapbox © OSM",k:"mapbox"},mbr:{z:22,a:"© Mapbox © OSM",k:"mapbox"},mbo:{z:22,a:"© Mapbox © OSM",k:"mapbox"},
  gr:{z:22,a:"© Google",k:"google"},gs:{z:22,a:"© Google",k:"google"}};
 const tileUrl=id=>`${location.origin}/tiles/${id}/{z}/{x}/{y}?v=${keyVer}`;
-const map=new maplibregl.Map({container:"map",center:[0,20],zoom:1.5,style:{version:8,glyphs:location.origin+"/fonts/{fontstack}/{range}.pbf",sources:{},layers:[]}});
+const map=new maplibregl.Map({container:"map",center:[2.5,46.6],zoom:4.5,style:{version:8,glyphs:location.origin+"/fonts/{fontstack}/{range}.pbf",sources:{},layers:[]}});
 map.addControl(new maplibregl.NavigationControl({visualizePitch:false}),"bottom-right");
 map.addControl(new maplibregl.ScaleControl(),"bottom-left");
-// La projection Globe nécessite MapLibre GL JS 5+ et une prise en charge WebGL.
-let globeView=false;
-const globeButton=$("#b-globe");
-function setGlobeView(enabled){
- try{
-  if(typeof map.setProjection!=="function"){
-   st("⚠️ La vue Globe nécessite MapLibre GL JS 5+ et une connexion Internet pour charger cette version. La carte plane reste disponible.");
-   return;
-  }
-  map.setProjection({type:enabled?"globe":"mercator"});
-  globeView=enabled;
-  globeButton.classList.toggle("on",globeView);
-  globeButton.textContent=globeView?"🗺 Vue plane":"🌐 Vue Globe";
-  if(globeView){map.easeTo({center:[0,20],zoom:1.2,pitch:0,bearing:0,duration:700});}
-  st(globeView?"Vue Globe activée.":"Projection plane activée.");
- }catch(e){st("⚠️ Impossible d'activer la vue Globe : "+(e.message||e));}
-}
-globeButton.onclick=()=>setGlobeView(!globeView);
 async function setBase(id){
  const b=BASES[id];
  if(b.k&&!cfg[b.k]){$("#base").value=curBase;st("⚠️ "+(b.k=="mapbox"?"Token Mapbox":"Clé Google")+" manquant(e) — bouton ⚙ Clés");openCfg();return}
@@ -330,10 +375,6 @@ map.on("load",()=>{
  map.addLayer({id:"grid-t",type:"symbol",source:"grid",layout:{"symbol-placement":"line","symbol-spacing":320,"text-field":["get","label"],"text-font":["Open Sans Regular,Arial Unicode MS Regular"],"text-size":11},paint:{"text-color":"#900000","text-halo-color":"#fff","text-halo-width":1.6}});
  setBase("osm");
 });
-let terrain3d=false;
-$("#b-terrain").onclick=()=>{try{if(!map.isStyleLoaded())return st("Attendez le chargement de la carte.");if(!terrain3d){if(!map.getSource("dem-terrain"))map.addSource("dem-terrain",{type:"raster-dem",tiles:["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],tileSize:256,encoding:"terrarium",maxzoom:15});map.setTerrain({source:"dem-terrain",exaggeration:1.25});map.easeTo({pitch:55,duration:600});map.once("idle",()=>{reorderPv();applyVis();applyMapRasterFilters()});$("#b-terrain").classList.add("on");$("#b-terrain").textContent="⛰ Relief 3D activé";terrain3d=true}else{map.setTerrain(null);map.easeTo({pitch:0,duration:600});map.once("idle",()=>{reorderPv();applyVis()});$("#b-terrain").classList.remove("on");$("#b-terrain").textContent="⛰ Relief 3D";terrain3d=false}}catch(e){st("⚠️ Relief 3D indisponible : "+(e.message||e))}};
-$("#theme").onclick=()=>{document.body.classList.toggle("dark");const dark=document.body.classList.contains("dark");$("#theme").textContent=dark?"☀ Mode clair":"🌙 Mode sombre"};
-
 $("#base").onchange=e=>setBase(e.target.value);
 const berr={};
 map.on("error",async e=>{
@@ -346,10 +387,9 @@ map.on("error",async e=>{
 });
 
 // ---------- Clés ----------
-fetch("/api/settings").then(r=>r.json()).then(s=>{cfg={mapbox:s.mapbox||"",google:s.google||"",s3:s.s3||{},custom_tiles:s.custom_tiles||"",output_dir:s.output_dir||""};loadS3()});
+fetch("/api/settings").then(r=>r.json()).then(s=>{cfg={mapbox:s.mapbox||"",google:s.google||"",opentopo:s.opentopo||"",s3:s.s3||{},theme:s.theme||"dark",out_dir:s.out_dir||""};loadS3();$("#ot-key").value=cfg.opentopo;if(cfg.theme==="light")setTheme(false);if(cfg.out_dir){exportDest=cfg.out_dir;$("#destv").textContent=$("#destv2").textContent=cfg.out_dir}});
 function openCfg(){$("#k-mb").value=cfg.mapbox;$("#k-g").value=cfg.google;$("#dlg").showModal()}
 $("#cfg").onclick=openCfg; $("#k-cancel").onclick=()=>$("#dlg").close();
-$("#k-show").onclick=()=>{const show=$("#k-mb").type==="password";$("#k-mb").type=show?"text":"password";$("#k-g").type=show?"text":"password";$("#k-show").textContent=show?"🙈 Masquer les clés":"👁 Afficher les clés"};
 $("#k-save").onclick=async()=>{keyVer++;
  cfg={...cfg,mapbox:$("#k-mb").value.trim(),google:$("#k-g").value.trim()};
  await fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
@@ -370,10 +410,9 @@ $("#qgo").onclick=search; $("#q").onkeydown=e=>{if(e.key=="Enter")search()};
 
 // ---------- Visionneuse d'image (zoom + déplacement) ----------
 let id=null,nat={w:0,h:0},k=1,tx=0,ty=0;
-const iv=$("#iv"),ib=$("#ib");let fitPending=false;
+const iv=$("#iv"),ib=$("#ib");
 const apply=()=>{ib.style.transform=`translate(${tx}px,${ty}px) scale(${k})`;ib.style.setProperty("--inv",1/k)};
-function fit(){const r=iv.getBoundingClientRect();if(!nat.w||!nat.h)return;if(r.width<2||r.height<2){fitPending=true;return}k=Math.min(r.width/nat.w,r.height/nat.h)*.95;if(!isFinite(k)||k<=0)return;tx=(r.width-nat.w*k)/2;ty=(r.height-nat.h*k)/2;fitPending=false;apply()}
-new ResizeObserver(()=>{if(nat.w&&(fitPending||!isFinite(k)||k<=0))fit()}).observe(iv);
+function fit(){const r=iv.getBoundingClientRect();k=Math.min(r.width/nat.w,r.height/nat.h)*.95;tx=(r.width-nat.w*k)/2;ty=(r.height-nat.h*k)/2;apply()}
 function zoomAt(f,cx,cy){const nk=Math.min(40,Math.max(.01,k*f));tx=cx-(cx-tx)*nk/k;ty=cy-(cy-ty)*nk/k;k=nk;apply()}
 iv.addEventListener("wheel",e=>{e.preventDefault();const r=iv.getBoundingClientRect();zoomAt(e.deltaY<0?1.25:.8,e.clientX-r.left,e.clientY-r.top)},{passive:false});
 const mid=f=>()=>{if(nat.w){const r=iv.getBoundingClientRect();zoomAt(f,r.width/2,r.height/2)}};
@@ -459,7 +498,7 @@ const commit=()=>{hist.push(stateJS());if(hist.length>300)hist.shift();fut=[]}; 
 const restore=js=>{const o=JSON.parse(js);gcps=o.gcps;pend=o.pend;sel=-1;redraw()};
 const undo=()=>{if(hist.length){fut.push(stateJS());restore(hist.pop())}};
 const redo=()=>{if(fut.length){hist.push(stateJS());restore(fut.pop())}};
-const badge=(n,c)=>{const e=document.createElement("div");e.className="pt "+c;e.textContent=n;return e};
+const badge=(n,c)=>{const e=document.createElement("div");e.className="pt "+c;e.innerHTML=`<span class="pn">${n}</span>`;return e};
 const place=(e,p)=>{e.style.left=p.px+"px";e.style.top=p.py+"px"};
 function del(i){commit();gcps.splice(i,1);sel=-1;redraw()}
 function centerImg(px,py){const r=iv.getBoundingClientRect();tx=r.width/2-px*k;ty=r.height/2-py*k;apply()}
@@ -468,13 +507,11 @@ function dragImg(e,i){
  e.onpointerdown=ev=>{
   ev.stopPropagation();ev.preventDefault();e.setPointerCapture(ev.pointerId);
   let moved=false;sel=i;
-  // Conserver le décalage entre l'endroit cliqué et le centre du point : pas de saut.
-  const start=toNat(ev), offsetX=gcps[i].px-start[0], offsetY=gcps[i].py-start[1];
   const mv=x=>{
-   const p=toNat(x);
+   const r=iv.getBoundingClientRect();
    if(!moved){moved=true;commit()}
-   gcps[i].px=Math.min(nat.w,Math.max(0,p[0]+offsetX));
-   gcps[i].py=Math.min(nat.h,Math.max(0,p[1]+offsetY));
+   gcps[i].px=Math.min(nat.w,Math.max(0,(x.clientX-r.left-tx)/k));
+   gcps[i].py=Math.min(nat.h,Math.max(0,(x.clientY-r.top-ty)/k));
    place(e,gcps[i]);
   };
   const up=()=>{e.removeEventListener("pointermove",mv);e.removeEventListener("pointerup",up);redraw()};
@@ -530,53 +567,33 @@ document.addEventListener("keydown",e=>{
  if(c&&key=="z"&&!e.shiftKey){e.preventDefault();undo()}
  else if(c&&(key=="y"||(key=="z"&&e.shiftKey))){e.preventDefault();redo()}
  else if((e.key=="Delete"||e.key=="Backspace")&&sel>=0){e.preventDefault();del(sel)}
- else if(c&&key=="s"){e.preventDefault();$("#b-save").click()}
+ else if(c&&key=="s"){e.preventDefault();saveProject(e.shiftKey)}
  else if(e.key=="Escape"&&(moveMode||document.querySelector(".win.full"))){if(moveMode)$("#b-move").click();const f=document.querySelector(".win.full");if(f){f.classList.remove("full");setTimeout(()=>{map.resize();nat.w&&fit()},50)}}
  else if(e.key=="Escape"){if(pend.img||pend.geo){commit();pend={img:null,geo:null}}else sel=-1;redraw()}
 });
+function coordText(){
+ const a=$("#coord1").value.trim(),b=$("#coord2").value.trim(),z=$("#czone").value.trim();
+ if($("#cf").value=="utm"&&z)return z+" "+a+" "+b;
+ return b?a+" "+b:a;
+}
+function coordLabels(){
+ const f=$("#cf").value,lf=$("#lf").checked,geo=["auto","dd","grp","grg"].includes(f);
+ const A=geo?(lf?"Longitude":"Latitude"):"X / Est",B=geo?(lf?"Latitude":"Longitude"):"Y / Nord";
+ const ex=f=="grp"||f=="grg"?" (ex. 39g 90)":geo?" (ex. 35.87 ou 35°52'12\"N)":"";
+ $("#coord1").placeholder=A+ex;$("#coord2").placeholder=B+(f=="grp"||f=="grg"?" (ex. 5g 30)":geo?" (ex. 7.11 ou 7°06'E)":"");
+ $("#czone").style.display=f=="utm"?"":"none";
+}
+$("#cf").onchange=coordLabels;$("#lf").onchange=coordLabels;coordLabels();
 function placeCoord(){
  try{
-  let p;
-  const latText=$("#coord-lat").value,lonText=$("#coord-lon").value;
-  if(latText!==""&&lonText!==""){
-   p={lat:Number(latText),lon:Number(lonText)};
-   if(!Number.isFinite(p.lat)||!Number.isFinite(p.lon)||Math.abs(p.lat)>90||Math.abs(p.lon)>180)throw new Error("Latitude/longitude hors limites.");
-  }else p=parseCoords($("#coord").value,$("#cf").value,$("#lf").checked);
+  const p=parseCoords(coordText(),$("#cf").value,$("#lf").checked);
   setGeo(p.lon,p.lat); map.flyTo({center:[p.lon,p.lat],zoom:Math.max(map.getZoom(),14)});
  }catch(e){st("⚠️ "+(e.message||e))}
 }
-$("#cgo").onclick=placeCoord; ["#coord-lat","#coord-lon","#coord"].forEach(q=>$(q).onkeydown=e=>{if(e.key=="Enter")placeCoord()});
-$("#cf").onchange=()=>{const dd=["auto","dd"].includes($("#cf").value);$("#coord-lat").style.display=dd?"":"none";$("#coord-lon").style.display=dd?"":"none";$("#coord").style.display=dd?"none":"";};
+$("#cgo").onclick=placeCoord;["#coord1","#coord2","#czone"].forEach(q=>$(q).onkeydown=e=>{if(e.key=="Enter")placeCoord()});
 
 // ---------- Envoi / traitement ----------
 const MINP={affine:3,poly2:6,tps:4};
-// Saisie directe des GCP : pixels dans l'image native, coordonnées géographiques EPSG:4326.
-function fillGcpCorners(){if(!nat.w||!nat.h)return st("Chargez d'abord une image.");const xy=[[0,0],[nat.w,0],[nat.w,nat.h],[0,nat.h]];xy.forEach((p,i)=>{$("#gpx"+i).value=p[0];$("#gpy"+i).value=p[1]})}
-$("#b-gcp-fill").onclick=fillGcpCorners;
-$("#b-gcp-apply").onclick=()=>{
- try{
-  if(!nat.w||!nat.h)throw "Chargez d'abord une image.";
-  const g=[];
-  for(let i=0;i<4;i++){
-   const keys=["gpx","gpy","glon","glat"], raw=keys.map(k=>$("#"+k+i).value.trim());
-   if(raw.every(v=>v===""))continue;
-   if(raw.some(v=>v===""))throw `P${i+1} : remplissez X, Y, longitude et latitude, ou laissez toute la ligne vide.`;
-   const vals=raw.map(Number);
-   if(vals.some(v=>!Number.isFinite(v)))throw `P${i+1} : valeur numérique invalide.`;
-   const [px,py,lon,lat]=vals;
-   if(px<0||px>nat.w||py<0||py>nat.h)throw `P${i+1} : pixels hors de l'image (${nat.w} × ${nat.h}).`;
-   if(lon < -180||lon>180||lat < -90||lat>90)throw `P${i+1} : coordonnées hors limites EPSG:4326. Utilisez la longitude et latitude réelles, pas 884/298.`;
-   g.push({px,py,lon,lat});
-  }
-  if(!g.length)throw "Saisissez au moins une ligne complète. X/Y sont des pixels; longitude/latitude sont des coordonnées géographiques.";
-  if(new Set(g.map(p=>p.px+","+p.py)).size!==g.length)throw "Deux points ont les mêmes pixels X/Y. Corrigez les doublons.";
-  commit();gcps=g;pend={img:null,geo:null};sel=-1;redraw();scheduleEst();
-  if(g.length>=2){const b=g.reduce((a,q)=>[Math.min(a[0],q.lon),Math.min(a[1],q.lat),Math.max(a[2],q.lon),Math.max(a[3],q.lat)],[180,90,-180,-90]);if(b[2]>b[0]&&b[3]>b[1])map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:40});}
-  const need=MINP[$("#method").value]||3;
-  st(g.length<need?`${g.length} point(s) enregistré(s). Il en faut ${need} pour la méthode ${$("#method").selectedOptions[0].text}. Ajoutez les autres points avant de géoréférencer.`:`${g.length} points appliqués. Vérifiez leur position puis lancez « Géoréférencer ».`);
- }catch(e){st("⚠️ "+(e.message||e))}
-};
-
 function newProject(){
  layers=[];cur=-1;id=null;gcps=[];pend={img:null,geo:null};sel=-1;hist=[];fut=[];nat={w:0,h:0};resMode=false;
  const s0=map.getStyle();
@@ -586,11 +603,11 @@ function newProject(){
 async function uploadImage(f){
  st("Envoi de l'image…");const fd=new FormData();fd.append("file",f);
  const r=await fetch("/api/maps",{method:"POST",body:fd});
- if(!r.ok){st("⚠️ "+(await r.json()).detail);return null}
+ if(!r.ok){const m="⚠️ Import impossible : "+(await r.json()).detail;st(m);alert(m);return null}
  return r.json();
 }
 $("#file").onchange=async e=>{const f=e.target.files[0];if(!f)return;const j=await uploadImage(f);if(!j)return;newProject();addLayer(j);e.target.value=""};
-$("#addimg").onchange=async e=>{const f=e.target.files[0];if(!f)return;const tab=window.open("about:blank","_blank");const j=await uploadImage(f);if(!j){if(tab)tab.close();return}e.target.value="";st("Image ajoutée : ouverture dans un nouvel onglet…");if(tab)tab.location.href="/?image="+encodeURIComponent(j.id);else st("Le navigateur a bloqué le nouvel onglet : autorisez les fenêtres contextuelles pour KalipheTiles.");};
+$("#addimg").onchange=async e=>{const f=e.target.files[0];if(!f)return;const j=await uploadImage(f);if(!j)return;addLayer(j);staleResult();e.target.value="";st("Image ajoutée au collage : posez ses points")};
 function updGo(){saveCur();$("#go").disabled=!layers.some(l=>l.vis&&l.gcps.length>=MINP[l.method])}
 $("#go").onclick=async()=>{
  const spec=layersSpec();if(!spec.length)return st("Posez au moins 3 points sur une image visible");
@@ -651,24 +668,24 @@ document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
  document.querySelectorAll(".tabs button,.tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");$("#t-"+b.dataset.t).classList.add("on")});
 
 // ---------- Image : rogner, pivoter, couleurs ----------
+function showImgErr(){st("⚠️ Le navigateur ne peut pas afficher cette image (fichier abîmé ?). Essayez de la ré-enregistrer en JPG/PNG, ou ouvrez 🔧 Diagnostic.")}
 function showImage(j,keep){
  id=j.id||id;nat={w:j.width,h:j.height};
- ib.innerHTML=`<img src="${j.image}?t=${Date.now()}" width="${j.width}" height="${j.height}"><div id="cr"></div>`;
+ ib.innerHTML=`<img src="${j.image}?t=${Date.now()}" width="${j.width}" height="${j.height}" onerror="showImgErr()"><div id="cr"></div>`;
  if(!keep)fit();
 }
 function setTool(t){
- tool=t;angPts=[];["crop","pick","angle"].forEach(x=>$("#b-"+x).classList.toggle("on",x==t));
+ tool=t;angPts=[];[["crop","crop"],["pick","pick"],["angle","ang"]].forEach(([x,i])=>$("#b-"+i).classList.toggle("on",x==t));
  iv.style.cursor=t=="pts"?"crosshair":"cell";
  if(t!="pts")st({crop:"Rogner : tracez un rectangle sur l'image",pick:"Pipette : cliquez une couleur à supprimer",angle:"Cliquez 2 points d'une ligne qui doit être horizontale"}[t]);
 }
-$("#b-harmonize").onclick=()=>{if(confirm("Appliquer une correction automatique des tons à cette image ?"))edit({op:"harmonize"})};
 $("#b-crop").onclick=()=>setTool(tool=="crop"?"pts":"crop");
 $("#b-pick").onclick=()=>setTool(tool=="pick"?"pts":"pick");
 $("#b-ang").onclick=()=>setTool(tool=="angle"?"pts":"angle");
 async function edit(body,keep){
  if(cur<0)return st("Chargez d'abord une image");
  st("Traitement de l'image…");
- const r=await fetch(`/api/maps/${id}/edit`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...body,gcps,keep_export:$("#keep-edit")?.checked||false})});
+ const r=await fetch(`/api/maps/${id}/edit`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...body,gcps})});
  if(!r.ok)return st("⚠️ "+(await r.json()).detail);
  const j=await r.json(),L=layers[cur];
  hist=[];fut=[];gcps=j.gcps;L.gcps=gcps;L.w=j.width;L.h=j.height;L.image=j.image;pend={img:null,geo:null};sel=-1;cropBox=null;$("#cropinfo").textContent="";
@@ -697,7 +714,7 @@ function toLL(x,y){
 let locPts=null;
 function showLoc(){const m=$("#lm").value;document.querySelectorAll("[data-m]").forEach(e=>e.style.display=e.dataset.m.split(" ").includes(m)?"":"none");locPts=null}
 $("#lm").onchange=showLoc;showLoc();
-$("#lf").onchange=async e=>{
+$("#locfile").onchange=async e=>{
  const f=e.target.files[0];if(!f)return;
  try{
   const t=await f.text(),m=$("#lm").value;
@@ -764,29 +781,13 @@ $("#method").onchange=()=>{saveCur();redraw()};zrUpdate();
 // ---------- Export (collage : un seul fichier par format) ----------
 $("#b-exp").onclick=async()=>{
  const kinds=[...document.querySelectorAll(".xk:checked")].map(x=>x.value),el=$("#exs"),spec=layersSpec();
+ if(!spec.length){el.textContent="Posez d'abord 3 points sur une image visible";return}
  if(!kinds.length){el.textContent="Choisissez au moins un format";return}
- const rawOnly=kinds.every(k=>["original","current","limits"].includes(k));
- if(!spec.length&&!rawOnly){el.textContent="Posez d'abord les points de référencement requis pour les formats géographiques";return}
- const exportLayers=spec.length?spec:layers.map(l=>({id:l.id,name:l.name,gcps:l.gcps||[],method:l.method||"affine",vis:l.vis}));
  el.textContent="Export en cours… (les grandes images peuvent prendre du temps)";
- const r=await fetch(`/api/maps/${spec[0].id}/export`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({layers:exportLayers,kinds,crs:$("#ocrs").value,max_px:+$("#maxpx").value})});
- const j=await r.json();el.textContent=r.ok?"✅ "+j.files.join(" · "):"⚠️ "+j.detail;
+ const r=await fetch(`/api/maps/${spec[0].id}/export`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({layers:spec,kinds,crs:$("#ocrs").value,max_px:+$("#maxpx").value,demtype:$("#otdem").value,dest:exportDest||null,hm:hmOptions()})});
+ const j=await r.json();el.textContent=r.ok?"✅ "+j.files.join(" · ")+"\nDossier : "+j.folder:"⚠️ "+j.detail;
 };
-$("#b-open").onclick=()=>{const s=layersSpec();s.length&&fetch(`/api/maps/${s[0].id}/open`,{method:"POST"})};
-
-// OpenTopography Global DEM : le serveur relaie la requête et renvoie un GeoTIFF.
-$("#ot-use-map").onclick=()=>{
- const b=map.getBounds(), buffer=Number($("#ot-buffer").value||0);
- const lat=(b.getNorth()+b.getSouth())/2;
- // Approximations locales en degrés pour appliquer une marge en mètres.
- const dLat=buffer/111320, dLon=buffer/(111320*Math.max(0.01,Math.cos(lat*Math.PI/180)));
- const west=b.getWest()-dLon, east=b.getEast()+dLon, south=b.getSouth()-dLat, north=b.getNorth()+dLat;
- if(south>=north || west>=east){$("#ot-status").textContent="⚠️ Le buffer négatif réduit l’emprise à une zone invalide.";return}
- $("#ot-west").value=west.toFixed(6);$("#ot-south").value=south.toFixed(6);$("#ot-east").value=east.toFixed(6);$("#ot-north").value=north.toFixed(6);
- $("#ot-status").textContent="Emprise reprise de la carte avec un buffer de "+buffer+" m.";
-};
-$("#ot-use-gcps").onclick=()=>{try{saveCur();const L=layers[cur];if(!L||L.gcps.length<3)throw new Error("Posez au moins 3 points de référencement sur l’image active.");const pts=L.gcps;const west=Math.min(...pts.map(p=>p.lon)),east=Math.max(...pts.map(p=>p.lon)),south=Math.min(...pts.map(p=>p.lat)),north=Math.max(...pts.map(p=>p.lat));if(!(west<east&&south<north))throw new Error("Les points ne définissent pas une emprise valide.");const b=Number($("#ot-buffer").value||0),lat=(south+north)/2,dy=b/111320,dx=b/(111320*Math.max(.01,Math.cos(lat*Math.PI/180)));$("#ot-west").value=(west-dx).toFixed(7);$("#ot-east").value=(east+dx).toFixed(7);$("#ot-south").value=(south-dy).toFixed(7);$("#ot-north").value=(north+dy).toFixed(7);$("#ot-status").textContent="Emprise calculée depuis les points de référencement (buffer inclus)."}catch(e){$("#ot-status").textContent="⚠️ "+e.message}};
-$("#ot-download").onclick=async()=>{try{const key=$("#ot-key").value.trim();if(!key)throw new Error("Saisissez votre clé API OpenTopography.");const body={api_key:key,demtype:$("#ot-dem").value,west:Number($("#ot-west").value),south:Number($("#ot-south").value),east:Number($("#ot-east").value),north:Number($("#ot-north").value)};if(Object.values(body).some(v=>v===null||v===undefined||v===""||(typeof v==="number"&&!Number.isFinite(v))))throw new Error("Renseignez les quatre limites de l’emprise.");$("#ot-status").textContent="Téléchargement auprès d’OpenTopography…";const r=await fetch("/api/opentopography",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});if(!r.ok){let msg="Erreur du service";try{msg=(await r.json()).detail||msg}catch(e){}throw new Error(msg)}const blob=await r.blob();const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="opentopography_dem.tif";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("#ot-status").textContent="MNT GeoTIFF téléchargé. L’emprise demandée est celle saisie ci-dessus."}catch(e){$("#ot-status").textContent="⚠️ "+(e.message||e)}};
+$("#b-open").onclick=()=>{if(exportDest)return fetch("/api/open_path",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({path:exportDest})});const s=layersSpec();s.length&&fetch(`/api/maps/${s[0].id}/open`,{method:"POST"})};
 
 // ---------- Cloud (S3 / R2 / Scaleway / MinIO) ----------
 const S3F={endpoint:"s3e",region:"s3r",bucket:"s3b",access_key:"s3a",secret_key:"s3s",prefix:"s3p"};
@@ -809,69 +810,56 @@ $("#b-up").onclick=async()=>{
 };
 
 // ---------- Projet ----------
-$("#b-save").onclick=async()=>{
- if(!layers.length)return st("Rien à enregistrer");saveCur();
- const r=await fetch("/api/save_project",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({layers:layers.map(l=>({id:l.id,name:l.name,gcps:l.gcps||[],method:l.method||"affine",vis:l.vis})),zmin:+$("#zmin").value,zmax:+$("#zmax").value,crs:$("#ocrs").value,hd:$("#hd").checked})});
- const j=await r.json();if(!r.ok)return st("⚠️ "+j.detail);$("#prs").textContent="💾 "+j.path;st("💾 Projet enregistré : "+j.path);
-};
 $("#b-openroot").onclick=()=>fetch("/api/open_root",{method:"POST"});
-$("#pf").onchange=async e=>{
- const f=e.target.files[0];if(!f)return;const fd=new FormData();fd.append("file",f);
+async function openProjectFile(f){
+ const fd=new FormData();fd.append("file",f);
  const r=await fetch("/api/projects/open",{method:"POST",body:fd}),j=await r.json();
  if(!r.ok)return st("⚠️ "+j.detail);
  newProject();const p=j.project;
- for(const L of j.layers)layers.push({id:L.id,name:L.name,w:L.width,h:L.height,image:L.image,gcps:L.gcps||[],method:L.method||"affine",vis:L.vis!==false});
+ for(const L of j.layers)layers.push({id:L.id,name:L.name,w:L.width,h:L.height,image:L.image,gcps:L.gcps||[],method:L.method||"affine",vis:L.vis!==false,dem:!!L.dem});
  $("#zmin").value=p.zmin??0;$("#zmax").value=p.zmax??18;$("#ocrs").value=p.crs||"3857";$("#hd").checked=!!p.hd;autoZ=false;zrUpdate();
  if(layers.length){selectLayer(0);layers.forEach((l,i)=>{if(i!=0)schedulePreview(i)})}
  const all=layers.flatMap(l=>l.gcps);
  if(all.length){const b=all.reduce((a,q)=>[Math.min(a[0],q.lon),Math.min(a[1],q.lat),Math.max(a[2],q.lon),Math.max(a[3],q.lat)],[180,90,-180,-90]);map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:60})}
- st("Projet ouvert : "+layers.map(l=>l.name).join(", "));e.target.value="";
-};
+ projPath="";st("Projet ouvert : "+layers.map(l=>l.name).join(", "));
+}
+$("#pf").onchange=e=>{const f=e.target.files[0];e.target.value="";if(f)openProjectFile(f)};
 
 // ---------- Calques (collage) + aperçu en direct ----------
 let layers=[],cur=-1,resMode=false,pvTimer={},pvSeq={},moveMode=false,mv=null,noClickUntil=0;
 const opac=()=>+$("#opac").value;
 function saveCur(){if(cur<0||!layers[cur])return;layers[cur].gcps=gcps;layers[cur].method=$("#method").value}
-function layersSpec(){saveCur();return layers.filter(l=>l.vis&&l.gcps.length>=MINP[l.method]).map(l=>({id:l.id,name:l.name,gcps:l.gcps,method:l.method}))}
+function layersSpec(){saveCur();return layers.filter(l=>l.vis&&l.gcps.length>=MINP[l.method]).map(l=>({id:l.id,name:l.name,gcps:l.gcps,method:l.method,adj:$("#sync").checked?(l.adj||null):null}))}
 function projId(){const s=layersSpec();return s.length?s[0].id:(layers[0]&&layers[0].id)}
 function addLayer(j){
- saveCur();layers.push({id:j.id,name:j.name||("Image "+(layers.length+1)),w:j.width,h:j.height,image:j.image,gcps:[],method:"affine",vis:true});
+ saveCur();layers.push({id:j.id,name:j.name||("Image "+(layers.length+1)),w:j.width,h:j.height,image:j.image,gcps:[],method:"affine",vis:true,dem:!!j.dem});
+ if($("#sync").checked)scheduleHarmonize();
  selectLayer(layers.length-1);
 }
 function selectLayer(i){
  saveCur();cur=i;const L=layers[i];id=L.id;gcps=L.gcps;pend={img:null,geo:null};sel=-1;hist=[];fut=[];
- $("#method").value=L.method;showImage({id:L.id,width:L.w,height:L.h,image:L.image});fillGcpCorners();
+ $("#method").value=L.method;showImage({id:L.id,width:L.w,height:L.h,image:L.image});
  $("#w-img .wh span").textContent="🖼 "+L.name;redraw();renderLayers();
 }
 function renderLayers(){
- $("#lyr").innerHTML=layers.map((l,i)=>`<div class="ly${i==cur?" sel":""}" data-i="${i}" draggable="true" title="Glisser pour modifier la profondeur Z"><input type="checkbox" class="lv" ${l.vis?"checked":""} title="Inclure dans le collage"><b>${i+1}</b><span class="ln">${l.name}</span><i>${l.gcps.length} pt</i><a data-a="up" title="Descendre sous">▲</a><a data-a="dn" title="Monter dessus">▼</a><a data-a="del" title="Retirer">✕</a></div>`).join("")||"<small>Aucune image</small>";
+ renderTabs();renderMapLayers();updLanding();
+ $("#lyr").innerHTML=layers.map((l,i)=>`<div class="ly${i==cur?" sel":""}" data-i="${i}"><input type="checkbox" class="lv" ${l.vis?"checked":""} title="Inclure dans le collage"><b>${i+1}</b><span class="ln">${l.name}</span><i>${l.gcps.length} pt</i>${l.dem?"<i style='color:#fca311'>MNT</i>":""}<a data-a="up" title="Descendre sous">▲</a><a data-a="dn" title="Monter dessus">▼</a><a data-a="del" title="Retirer">✕</a></div>`).join("")||"<small>Aucune image</small>";
 }
-$("#lyr").onclick=e=>{
+function lyrClick(e){
  const row=e.target.closest(".ly");if(!row)return;const i=+row.dataset.i,a=e.target.dataset.a;
- if(e.target.classList.contains("lv")){layers[i].vis=e.target.checked;applyVis();staleResult();updGo();scheduleEst();return}
- if(a=="del"){
-  if(!confirm("Retirer cette image du projet ?"))return;
-  saveCur();removePv(layers[i]);layers.splice(i,1);cur=-1;staleResult();
-  if(!layers.length){newProject();ib.innerHTML="";renderLayers();redraw();return}
-  selectLayer(Math.min(i,layers.length-1));return;
- }
+ if(e.target.classList.contains("lv")){setVis(i,e.target.checked);return}
+ if(a=="del"){closeLayer(i);return}
  if((a=="up"&&i>0)||(a=="dn"&&i<layers.length-1)){
   saveCur();const j=a=="up"?i-1:i+1;[layers[i],layers[j]]=[layers[j],layers[i]];
   cur=cur==i?j:cur==j?i:cur;reorderPv();staleResult();renderLayers();return;
  }
  if(i!=cur)selectLayer(i);
-};
-let layerDragIndex=null;
-const lyrBox=document.querySelector("#lyr");
-lyrBox.addEventListener("dragstart",e=>{const row=e.target.closest(".ly");if(!row)return;layerDragIndex=Number(row.dataset.i);e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",String(layerDragIndex));row.style.opacity=".45"});
-lyrBox.addEventListener("dragend",e=>{const row=e.target.closest(".ly");if(row)row.style.opacity="";layerDragIndex=null;lyrBox.querySelectorAll(".ly").forEach(x=>x.style.outline="")});
-lyrBox.addEventListener("dragover",e=>{if(!e.target.closest(".ly"))return;e.preventDefault();e.dataTransfer.dropEffect="move";e.target.closest(".ly").style.outline="2px dashed #fca311"});
-lyrBox.addEventListener("drop",e=>{const row=e.target.closest(".ly");if(!row)return;e.preventDefault();const from=layerDragIndex,to=Number(row.dataset.i);if(from==null||!Number.isInteger(to)||from===to)return;saveCur();const moved=layers.splice(from,1)[0];layers.splice(to,0,moved);cur=layers.indexOf(layers.find(l=>l.id===id));if(cur<0)cur=Math.min(to,layers.length-1);selectLayer(cur);renderLayers();reorderPv();applyVis();st("Ordre des calques mis à jour (profondeur Z).")});
-
+}
+$("#lyr").onclick=e=>{lyrClick(e);if($("#sync").checked)scheduleHarmonize()};
 function redrawHook(){
  if(cur<0||!layers[cur])return;const L=layers[cur];L.gcps=gcps;
  const sg=JSON.stringify(gcps)+$("#method").value;
- if(L.sig!==sg){L.sig=sg;schedulePreview(cur);staleResult();scheduleEst();renderLayers()}
+ if(L.sig!==sg){L.sig=sg;schedulePreview(cur);staleResult();scheduleEst();renderLayers();if($("#sync").checked)scheduleHarmonize()}
 }
 function schedulePreview(i){const L=layers[i];if(!L)return;clearTimeout(pvTimer[L.id]);pvTimer[L.id]=setTimeout(()=>doPreview(L),250)}
 async function doPreview(L){
@@ -879,7 +867,7 @@ async function doPreview(L){
  if(g.length<MINP[m]){removePv(L);return}
  const seq=pvSeq[L.id]=(pvSeq[L.id]||0)+1;
  try{
-  const r=await fetch(`/api/maps/${L.id}/preview`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({gcps:g,method:m})});
+  const r=await fetch(`/api/maps/${L.id}/preview`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({gcps:g,method:m,adj:$("#sync").checked?(L.adj||null):null})});
   if(!r.ok||seq!=pvSeq[L.id])return;
   const j=await r.json();if(seq!=pvSeq[L.id]||!layers.includes(L))return;setPv(L,j);
  }catch(e){}
@@ -893,7 +881,7 @@ function setPv(L,j){
 }
 function removePv(L){const sid="pv-"+L.id;if(map.getLayer(sid))map.removeLayer(sid);if(map.getSource(sid))map.removeSource(sid);L.pvc=null}
 function reorderPv(){const a=topAnchor();for(const l of layers)if(map.getLayer("pv-"+l.id))map.moveLayer("pv-"+l.id,a)}
-function firstOverlay(){const o=map.getStyle().layers.find(l=>/^pv-|^res$|^grid-l$|^frame-l$/.test(l.id));return o&&o.id}
+function firstOverlay(){const o=map.getStyle().layers.find(l=>/^hill$|^pv-|^res$|^grid-l$|^frame-l$/.test(l.id));return o&&o.id}
 function applyVis(){
  const on=$("#imgvis").checked;
  for(const l of layers){const sid="pv-"+l.id;if(map.getLayer(sid))map.setLayoutProperty(sid,"visibility",on&&l.vis&&!resMode?"visible":"none")}
@@ -935,84 +923,181 @@ document.querySelectorAll(".win").forEach(w=>{
  w.querySelector(".wf").onclick=t;w.querySelector(".wh").ondblclick=e=>{if(!e.target.closest("button"))t()};
 });
 
-// Réglages de rendu raster sur la carte (ne modifient pas les fichiers sources).
-function applyMapRasterFilters(){
- const contrast=+$("#map-contrast").value,sat=+$("#map-sat").value,hue=+$("#map-hue").value,bmin=+$("#map-brightmin").value,bmax=+$("#map-brightmax").value;
- for(const l of layers){const id="pv-"+l.id;if(!map.getLayer(id))continue;try{map.setPaintProperty(id,"raster-contrast",contrast);map.setPaintProperty(id,"raster-saturation",sat);map.setPaintProperty(id,"raster-hue-rotate",hue);map.setPaintProperty(id,"raster-brightness-min",Math.min(bmin,bmax));map.setPaintProperty(id,"raster-brightness-max",Math.max(bmin,bmax));}catch(e){}}
-}
-["#map-contrast","#map-sat","#map-hue","#map-brightmin","#map-brightmax"].forEach(sel=>$(sel).addEventListener("input",applyMapRasterFilters));
-$("#b-mapfilter").onclick=()=>{const el=$("#mapfilters");el.style.display=el.style.display==="none"?"block":"none"};
-$("#map-filter-reset").onclick=()=>{$("#map-contrast").value=0;$("#map-sat").value=0;$("#map-hue").value=0;$("#map-brightmin").value=0;$("#map-brightmax").value=1;applyMapRasterFilters()};
-$("#b-help").onclick=()=>$("#helpdlg").showModal();$("#helpclose").onclick=()=>$("#helpdlg").close();
-$("#b-about").onclick=()=>$("#aboutdlg").showModal();$("#aboutclose").onclick=()=>$("#aboutdlg").close();
 
-
-// Accueil : projets récents stockés localement dans le dossier KalipheTiles.
-async function showRecent(){
- const dlg=$("#recentdlg"), list=$("#recent-list"); list.innerHTML="<p>Chargement…</p>";
- dlg.showModal();
+// ---------- Synchronisation des couleurs, actualisation de l'aperçu ----------
+let hzTimer=0;
+function scheduleHarmonize(){clearTimeout(hzTimer);hzTimer=setTimeout(doHarmonize,800)}
+async function doHarmonize(){
+ if(!$("#sync").checked){layers.forEach((l,i)=>{if(l.adj){l.adj=null;schedulePreview(i)}});staleResult();return}
+ const spec=layersSpec().map(l=>({...l,adj:null}));
+ if(spec.length<2){layers.forEach(l=>l.adj=null);return}
  try{
-  const j=await (await fetch("/api/recent")).json();
-  list.innerHTML=j.length?j.map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid #ddd">
-   <img src="${p.image}" style="width:64px;height:48px;object-fit:contain;background:#eee">
-   <div style="flex:1"><b>${p.name}</b><small>${p.width||"?"} × ${p.height||"?"} px · ${p.status||"image"}</small></div>
-   <button data-open-recent="${p.id}">Ouvrir</button></div>`).join(""):"<p>Aucun projet récent. Importez une image pour commencer.</p>";
- }catch(e){list.innerHTML="<p>Impossible de lire les projets récents.</p>"}
+  const r=await fetch("/api/harmonize",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({layers:spec})});
+  if(!r.ok)return;const j=(await r.json()).adj;
+  layers.forEach((l,i)=>{const a=j[l.id]||null;if(JSON.stringify(a)!==JSON.stringify(l.adj||null)){l.adj=a;schedulePreview(i)}});
+  staleResult();st("🎨 Couleurs synchronisées entre les images");
+ }catch(e){}
 }
-$("#b-recent").onclick=showRecent;
-$("#recent-close").onclick=()=>$("#recentdlg").close();
-$("#recent-new").onclick=()=>{$("#recentdlg").close();newProject();ib.innerHTML="";renderLayers();redraw();st("Nouveau projet prêt")};
-$("#recent-import").onclick=()=>{$("#recentdlg").close();$("#file").click()};
-$("#recent-list").onclick=async e=>{
- const b=e.target.closest("[data-open-recent]");if(!b)return;
- try{const r=await fetch("/api/maps/"+b.dataset.openRecent);if(!r.ok)throw new Error("image introuvable");const m=await r.json();
-  $("#recentdlg").close();newProject();addLayer({id:m.id,name:m.name,width:m.width,height:m.height,image:m.image});st("Image rouverte : "+m.name);
- }catch(x){st("⚠️ "+x.message)}
+$("#sync").onchange=doHarmonize;
+$("#b-refresh").onclick=()=>{
+ staleResult();layers.forEach(l=>{l.sig=undefined});
+ if($("#sync").checked)doHarmonize();
+ layers.forEach(l=>doPreview(l));st("🔄 Aperçu actualisé");
 };
-// Fusion géoréférencée des calques visibles.
-function saveRequest(){saveCur();return {layers:layers.filter(l=>l.vis&&l.gcps.length>=MINP[l.method]).map(l=>({id:l.id,name:l.name,gcps:l.gcps,method:l.method,vis:l.vis})),zmin:+$("#zmin").value||0,zmax:+$("#zmax").value||18,crs:"3857",hd:!!$("#hd").checked}}
-$("#b-merge").onclick=async()=>{
- const req=saveRequest();if(!req.layers.length)return st("Ajoutez des points de géoréférencement aux calques visibles.");
- st("Fusion en cours…");const b=$("#b-merge");b.disabled=true;
- try{const r=await fetch("/api/merge",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(req)});const j=await r.json();if(!r.ok)throw new Error(j.detail||"fusion impossible");
-  const a=document.createElement("a");a.href=j.url;a.download=j.name;a.click();if(j.geotiff_url){const t=document.createElement("a");t.href=j.geotiff_url;t.download=j.geotiff_name;setTimeout(()=>t.click(),350)}st(`Fusion créée : ${j.width} × ${j.height} px. PNG et GeoTIFF exportés; le JSON d'emprise est dans le dossier fusions.`);
- }catch(e){st("⚠️ "+e.message)}finally{b.disabled=false}
-};
-$("#b-bundle").onclick=async()=>{
- const req=saveRequest();if(!req.layers.length)return st("Aucun calque visible géoréférencé à exporter.");
- st("Préparation de l'archive pour logiciel externe…");
- try{const r=await fetch("/api/export_bundle",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(req)});const j=await r.json();if(!r.ok)throw new Error(j.detail||"export impossible");
-  const a=document.createElement("a");a.href="/data/exports/"+j.name;a.download=j.name;a.click();st("Archive prête : originaux, images courantes, versions, projet et fusion si possible.");
- }catch(e){st("⚠️ "+e.message)}
-};
-$("#b-output").onclick=async()=>{
- try{const r=await fetch("/api/choose_output",{method:"POST"}),j=await r.json();if(!r.ok)throw new Error(j.detail||"sélection impossible");if(!j.cancelled)st("Dossier de sortie des tuiles : "+j.folder);else st("Sélection annulée");}
- catch(e){st("⚠️ "+e.message)}
-};
-// Service de tuiles XYZ/TMS privé, par exemple un serveur de tuiles sur NAS.
-// Le modèle attendu est une URL XYZ avec {z}/{x}/{y}; elle est conservée dans les réglages locaux.
-$("#b-custom-map").onclick=async()=>{
- const old=cfg.custom_tiles||"", u=prompt("Adresse du service de tuiles XYZ (ex. http://mon-nas:8080/tiles/{z}/{x}/{y}.png)",old);
- if(u===null)return;
- if(u.trim()&&!/\{z\}.*\{x\}.*\{y\}|\{x\}.*\{y\}.*\{z\}/.test(u))return st("L'adresse doit contenir {z}, {x} et {y}.");
- cfg.custom_tiles=u.trim();await fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
- if(!cfg.custom_tiles)return st("Service cartographique personnalisé effacé.");
- try{if(map.getLayer("base"))map.removeLayer("base");if(map.getSource("base"))map.removeSource("base");
-  map.addSource("base",{type:"raster",tiles:[cfg.custom_tiles],tileSize:256,maxzoom:22,attribution:"Service personnalisé"});map.addLayer({id:"base",type:"raster",source:"base"},firstOverlay());st("Service de carte personnalisé chargé.");}
- catch(e){st("⚠️ Service perso : "+e.message)}
-};
-// Taille réglable des marqueurs de points de contrôle.
-let pointSize=1;const pointSizes=[["S",.72],["M",1],["L",1.35],["XL",1.7]];
-$("#b-point-size").onclick=()=>{pointSize=(pointSize+1)%pointSizes.length;const [label,scale]=pointSizes[pointSize];document.documentElement.style.setProperty("--point-scale",scale);document.querySelectorAll(".pt").forEach(p=>{p.style.transform=`translate(-50%,-50%) scale(${scale})`});$("#b-point-size").textContent="🔴 Points : "+label};
 
+// ---------- Relief 3D ----------
+let t3d=false;
+function set3D(on){
+ t3d=on;$("#b-3d").classList.toggle("on",on);
+ if(on){
+  if(!map.getSource("dem"))map.addSource("dem",{type:"raster-dem",tiles:[location.origin+"/tiles/terrarium/{z}/{x}/{y}"],encoding:"terrarium",tileSize:256,maxzoom:15});
+  if(!map.getLayer("hill"))map.addLayer({id:"hill",type:"hillshade",source:"dem",paint:{"hillshade-exaggeration":.3}},firstOverlay());
+  map.setTerrain({source:"dem",exaggeration:+$("#exag").value});map.easeTo({pitch:60,duration:700});
+ }else{
+  map.setTerrain(null);map.easeTo({pitch:0,bearing:0,duration:500});if(map.getLayer("hill"))map.removeLayer("hill");
+ }
+}
+$("#b-3d").onclick=()=>set3D(!t3d);$("#b-3d2").onclick=()=>set3D(!t3d);
+$("#exag").oninput=()=>{$("#exv").textContent=$("#exag").value;if(t3d)map.setTerrain({source:"dem",exaggeration:+$("#exag").value})};
+map.on("error",e=>{if(e.sourceId==="dem"&&!berr._dem){berr._dem=1;st("⚠️ Relief 3D : les tuiles d'altitude ne se chargent pas (internet ?). Cliquez sur 🔧 Diagnostic.")}});
+
+// ---------- OpenTopography ----------
+$("#ot-save").onclick=async()=>{
+ cfg.opentopo=$("#ot-key").value.trim();
+ await fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
+ $("#ot-out").textContent="✅ Clé enregistrée";
+};
+$("#ot-test").onclick=async()=>{
+ const o=$("#ot-out");o.textContent="Test de la connexion en cours…";await $("#ot-save").onclick();o.textContent="Test de la connexion en cours…";
+ try{
+  const j=await (await fetch("/api/opentopo/diag")).json();
+  o.textContent=j.steps.map(s=>(s.ok?"✅ ":"❌ ")+s.step+" — "+(s.ok?(s.detail||"ok"):s.detail+(s.hint?"\n     → "+s.hint:""))).join("\n");
+ }catch(e){o.textContent="⚠️ Diagnostic impossible : "+e}
+};
+
+// ---------- Accueil, onglets d'images, calques sur la carte ----------
+let projPath="",exportDest="";
+function updLanding(){$("#landing").classList.toggle("hide",layers.length>0);if(!layers.length)$("#w-img .wh span").textContent="🖼 Image à géoréférencer"}
+$("#l-open").onclick=()=>$("#file").click();$("#l-proj").onclick=()=>$("#pf").click();
+["dragover","drop"].forEach(t=>$("#ws").addEventListener(t,async e=>{
+ e.preventDefault();if(t!="drop")return;const f=e.dataTransfer.files[0];if(!f)return;
+ if(/\.ktproj$/i.test(f.name))return openProjectFile(f);
+ const j=await uploadImage(f);if(!j)return;
+ if(layers.length){addLayer(j);staleResult()}else{newProject();addLayer(j)}
+}));
+function renderTabs(){
+ $("#itabs").innerHTML=layers.map((l,i)=>`<div class="itab${i==cur?" on":""}" data-i="${i}" title="${l.name}"><span>${l.name}</span><b class="x">✕</b></div>`).join("")+`<div class="itab plus" id="itab-add" title="Ajouter une image (nouvel onglet)">＋</div>`;
+}
+$("#itabs").onclick=e=>{
+ const t=e.target.closest(".itab");if(!t)return;
+ if(t.id=="itab-add"){$("#addimg").click();return}
+ const i=+t.dataset.i;if(e.target.closest(".x")){closeLayer(i);return}if(i!=cur)selectLayer(i);
+};
+$("#itabs").onauxclick=e=>{if(e.button==1){const t=e.target.closest(".itab");if(t&&t.dataset.i!=null)closeLayer(+t.dataset.i)}};
+function closeLayer(i){
+ if(!confirm("Retirer cette image du projet ?"))return;
+ saveCur();removePv(layers[i]);layers.splice(i,1);cur=-1;staleResult();
+ if(!layers.length){newProject();ib.innerHTML="";renderLayers();redraw();return}
+ selectLayer(Math.min(i,layers.length-1));
+}
+function renderMapLayers(){
+ $("#mlay").innerHTML=layers.map((l,i)=>`<label class="mrow"><input type="checkbox" data-i="${i}" ${l.vis?"checked":""}> <b>${i+1}</b> ${l.name}</label>`).join("");
+}
+function setVis(i,v){
+ layers[i].vis=v;if(v&&!map.getLayer("pv-"+layers[i].id))schedulePreview(i);
+ applyVis();staleResult();updGo();scheduleEst();renderLayers();if($("#sync").checked)scheduleHarmonize();
+}
+$("#mlay").onchange=e=>{if(e.target.dataset.i!=null)setVis(+e.target.dataset.i,e.target.checked)};
+$("#b-ml").onclick=()=>$("#mlay").classList.toggle("hide");
+$("#b-contrast").onclick=()=>edit({op:"contrast"});
+
+// ---------- Thème clair / sombre ----------
+function setTheme(dark){document.getElementById("darkcss").disabled=!dark;$("#b-theme").textContent=dark?"☀":"🌙";$("#b-theme").title=dark?"Passer en mode clair":"Passer en mode sombre";cfg.theme=dark?"dark":"light"}
+$("#b-theme").onclick=()=>{setTheme(document.getElementById("darkcss").disabled);fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)})};
+
+// ---------- Choix de l'emplacement : projet et exports ----------
+async function pickSave(name){
+ const api=window.pywebview&&window.pywebview.api;
+ if(api&&api.choose_save){const r=await api.choose_save(name);return r||null}
+ const r=prompt("Chemin complet du fichier projet (.ktproj) :",(cfg.out_dir||"C:\\Users\\Public\\Documents")+"\\"+name);return r&&r.trim()||null;
+}
+async function pickFolder(){
+ const api=window.pywebview&&window.pywebview.api;
+ if(api&&api.choose_folder)return (await api.choose_folder())||null;
+ const r=prompt("Chemin complet du dossier de destination :",cfg.out_dir||"");return r&&r.trim()||null;
+}
+async function saveProject(as){
+ if(!layers.length)return st("Rien à enregistrer");saveCur();
+ let path=projPath;
+ if(as||!path){path=await pickSave((layers[0].name||"projet")+".ktproj");if(!path)return}
+ const r=await fetch("/api/save_project",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({layers:layers.map(l=>({id:l.id,name:l.name,gcps:l.gcps,method:l.method,vis:l.vis})),zmin:+$("#zmin").value,zmax:+$("#zmax").value,crs:$("#ocrs").value,hd:$("#hd").checked,dest:path})});
+ const j=await r.json();if(!r.ok)return st("⚠️ "+j.detail);
+ projPath=j.path;$("#prs").textContent="💾 "+j.path;st("💾 Projet enregistré : "+j.path);
+}
+$("#b-save").onclick=()=>saveProject(false);$("#b-savetop").onclick=()=>saveProject(false);$("#b-saveas").onclick=()=>saveProject(true);
+$("#b-opentop").onclick=()=>$("#pf").click();
+async function chooseDest(){
+ const p=await pickFolder();if(!p)return;exportDest=p;cfg.out_dir=p;$("#destv").textContent=$("#destv2").textContent=p;
+ fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
+}
+$("#b-dest").onclick=chooseDest;$("#b-dest2").onclick=chooseDest;
+
+// ---------- Heightmap OpenTopography ----------
+function hmOptions(){
+ const mode=$("#hm-mode").value,o={mode,margin:parseFloat($("#hm-margin").value)||0,clip:$("#hm-clip").checked,max_side:+$("#hm-side").value,
+  outputs:[...document.querySelectorAll(".hk:checked")].map(x=>x.value),demtype:$("#otdem").value};
+ if(mode=="view"){const b=map.getBounds();o.bbox=[b.getWest(),b.getSouth(),b.getEast(),b.getNorth()]}
+ return o;
+}
+function hmBBox(){
+ const o=hmOptions(),m=o.margin;let pts;
+ if(o.mode=="view"){const[w,s,e,n]=o.bbox;return[w-m,s-m,e+m,n+m]}
+ if(o.mode=="gcps")pts=layersSpec().flatMap(l=>l.gcps).map(g=>[g.lon,g.lat]);
+ else pts=layers.filter(l=>l.vis&&l.pvc).flatMap(l=>l.pvc);
+ if(!pts.length)return null;
+ const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);return[Math.min(...xs)-m,Math.min(...ys)-m,Math.max(...xs)+m,Math.max(...ys)+m];
+}
+$("#hm-show").onclick=()=>{
+ const b=hmBBox(),o=$("#ot-out");if(!b){o.textContent="Posez d'abord des points (l'emprise dépend des images calées)";return}
+ const g={type:"Feature",geometry:{type:"Polygon",coordinates:[[[b[0],b[1]],[b[2],b[1]],[b[2],b[3]],[b[0],b[3]],[b[0],b[1]]]]}};
+ if(map.getSource("hmbox"))map.getSource("hmbox").setData(g);
+ else{map.addSource("hmbox",{type:"geojson",data:g});map.addLayer({id:"hmbox-l",type:"line",source:"hmbox",paint:{"line-color":"#00e5ff","line-width":3,"line-dasharray":[3,2]}})}
+ map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:60});
+ o.textContent=`Emprise du MNT : ouest ${b[0].toFixed(5)}, sud ${b[1].toFixed(5)}, est ${b[2].toFixed(5)}, nord ${b[3].toFixed(5)}`;
+};
+$("#hm-go").onclick=async()=>{
+ const o=$("#ot-out"),spec=layersSpec();
+ if(!spec.length){o.textContent="Posez d'abord 3 points sur une image";return}
+ if(!document.querySelectorAll(".hk:checked").length){o.textContent="Cochez au moins un format de sortie";return}
+ cfg.opentopo=$("#ot-key").value.trim();
+ await fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
+ o.textContent="Téléchargement et traitement du MNT OpenTopography…";
+ try{
+  const r=await fetch(`/api/maps/${spec[0].id}/export`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({layers:spec,kinds:["heightmap"],crs:"3857",max_px:0,demtype:$("#otdem").value,dest:exportDest||null,hm:hmOptions()})});
+  const j=await r.json();o.textContent=r.ok?"✅ "+j.files.join(" · ")+"\nDossier : "+j.folder:"⚠️ "+j.detail;
+ }catch(e){o.textContent="⚠️ "+e}
+};
 redraw();
-// Un lien ?image=... ouvre une image uploadée comme espace de travail indépendant.
-(async()=>{const mid=new URLSearchParams(location.search).get("image");if(!mid)return;try{const r=await fetch("/api/maps/"+encodeURIComponent(mid));if(!r.ok)throw new Error("Image introuvable");const m=await r.json();newProject();addLayer({id:mid,name:m.name||"Image",width:m.width,height:m.height,image:m.image});st("Nouvel espace de travail : "+(m.name||"image"));}catch(e){st("⚠️ Impossible d'ouvrir l'image : "+e.message)}})();
-</script>
-<dialog id="recentdlg"><h3>🏠 KalipheTiles — Accueil</h3>
-<p>Ouvrir un projet récent, importer une image ou commencer un nouvel assemblage.</p>
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
-<button id="recent-new">＋ Nouveau projet</button><button id="recent-import">🖼 Importer une image</button><button id="recent-close">Fermer</button>
-</div><div id="recent-list" style="max-height:45vh;overflow:auto"></div>
-</dialog>
-</body></html>
+
+// Outils vectoriels / CAD et PMTiles
+let importedVector=null; const cadStatus=$("#cad-status");
+function showVector(data){
+ importedVector=data; const id="kt-imported-vector";
+ try{
+  [id+"-fill",id+"-line",id+"-point"].forEach(x=>{if(map.getLayer(x))map.removeLayer(x)});
+  if(map.getSource(id))map.removeSource(id);
+  map.addSource(id,{type:"geojson",data});
+  map.addLayer({id:id+"-fill",type:"fill",source:id,filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#00d4ff","fill-opacity":0.18}});
+  map.addLayer({id:id+"-line",type:"line",source:id,filter:["in",["geometry-type"],["literal",["LineString","MultiLineString","Polygon","MultiPolygon"]]],paint:{"line-color":"#00d4ff","line-width":2}});
+  map.addLayer({id:id+"-point",type:"circle",source:id,filter:["in",["geometry-type"],["literal",["Point","MultiPoint"]]],paint:{"circle-radius":5,"circle-color":"#ff8c00","circle-stroke-color":"#fff","circle-stroke-width":1.5}});
+  const pts=[]; const walk=c=>{if(Array.isArray(c)&&typeof c[0]==="number"&&typeof c[1]==="number")pts.push(c);else if(Array.isArray(c))c.forEach(walk)};
+  (data.features||[]).forEach(f=>walk(f.geometry?.coordinates));
+  if(pts.length){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);if(xs.every(Number.isFinite)&&ys.every(Number.isFinite)){const b=[[Math.min(...xs),Math.min(...ys)],[Math.max(...xs),Math.max(...ys)]];if(b[0][0]!==b[1][0]||b[0][1]!==b[1][1])map.fitBounds(b,{padding:45,maxZoom:16});}}
+  cadStatus.textContent=`${(data.features||[]).length} entité(s) vectorielle(s) affichée(s)`;
+ }catch(e){cadStatus.textContent="Vecteur chargé, affichage impossible : "+e.message}
+}
+$("#vector-file").addEventListener("change",async ev=>{const f=ev.target.files?.[0];if(!f)return;cadStatus.textContent="Import en cours…";try{const fd=new FormData();fd.append("file",f);const r=await fetch("/api/vector/import",{method:"POST",body:fd});const j=await r.json();if(!r.ok)throw Error(j.detail||"import impossible");showVector(j)}catch(e){cadStatus.textContent="⚠️ "+e.message}ev.target.value=""});
+$("#vector-dxf").onclick=async()=>{if(!importedVector){cadStatus.textContent="Importez d'abord un vecteur.";return}cadStatus.textContent="Préparation du DXF…";try{const r=await fetch("/api/vector/export-dxf",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({geojson:importedVector,name:"kaliphetiles_vectors"})});if(!r.ok){const j=await r.json();throw Error(j.detail||"export impossible")}const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="kaliphetiles_vectors.dxf";a.click();URL.revokeObjectURL(url);cadStatus.textContent="DXF exporté."}catch(e){cadStatus.textContent="⚠️ "+e.message}};
+$("#pmtiles-export").onclick=async()=>{const id=(typeof layers!=="undefined"&&layers.length)?layers[Math.max(0,cur||0)].id:null;if(!id){cadStatus.textContent="Importez une image et lancez Géoréférencer d'abord.";return}cadStatus.textContent="Conversion PMTiles…";try{const r=await fetch(`/api/maps/${id}/export-pmtiles`,{method:"POST"});if(!r.ok){const j=await r.json();throw Error(j.detail||"export impossible")}const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="kaliphetiles.pmtiles";a.click();URL.revokeObjectURL(url);cadStatus.textContent="PMTiles exporté."}catch(e){cadStatus.textContent="⚠️ "+e.message}};
+
+</script></body></html>
